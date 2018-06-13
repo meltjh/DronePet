@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
         userVision = UserVision(bebopVision)
         
-        bebopVision.set_user_callback_function(poepje, user_callback_args="hoi")
+#        bebopVision.set_user_callback_function(poepje, user_callback_args="hoi")
         bebopVision.set_user_callback_function(userVision.show_detection, user_callback_args=None)
         
         bebopVision.open_video()
