@@ -85,8 +85,7 @@ if __name__ == "__main__":
 
     if (success):
         # start up the video
-        bebopVision = DroneVisionGUI.DroneVisionGUI(bebop, is_bebop=True, user_code_to_run=demo_user_code_after_vision_opened,
-                                     user_args=(bebop, ))
+        bebopVision = DroneVisionGUI.DroneVisionGUI(bebop, is_bebop=True, user_args=(bebop, ))
 
         userVision = UserVision(bebopVision)
         

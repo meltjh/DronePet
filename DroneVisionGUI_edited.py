@@ -100,7 +100,7 @@ class Player(QMainWindow):
         self.hbuttonbox = QHBoxLayout()
         self.playbutton = QPushButton("Run my program")
         self.hbuttonbox.addWidget(self.playbutton)
-        self.playbutton.clicked.connect(partial(self.drone_vision.run_user_code, self.playbutton))
+#        self.playbutton.clicked.connect(partial(self.drone_vision.run_user_code, self.playbutton))
 
         self.landbutton = QPushButton("Land NOW")
         self.hbuttonbox.addWidget(self.landbutton)
@@ -157,26 +157,26 @@ class UserVisionProcessingThread(QThread):
         print("exiting user vision thread")
         self.exit()
 
-class UserCodeToRun(QThread):
-    def __init__(self, user_function, user_args, drone_vision):
-        """
-        :param user_function: user code to run (presumably flies the drone)
-        :param user_args: optional arguments to the user function
-        """
-        QThread.__init__(self)
-        self.user_vision_function = user_function
-        self.user_args = user_args
-        self.drone_vision = drone_vision
-
-    def __del__(self):
-        self.wait()
-
-    def run(self):
-        self.user_vision_function(self.drone_vision, self.user_args)
+#class UserCodeToRun(QThread):
+#    def __init__(self, user_function, user_args, drone_vision):
+#        """
+#        :param user_function: user code to run (presumably flies the drone)
+#        :param user_args: optional arguments to the user function
+#        """
+#        QThread.__init__(self)
+#        self.user_vision_function = user_function
+#        self.user_args = user_args
+#        self.drone_vision = drone_vision
+#
+#    def __del__(self):
+#        self.wait()
+#
+#    def run(self):
+#        self.user_vision_function(self.drone_vision, self.user_args)
 
 
 class DroneVisionGUI:
-    def __init__(self, drone_object, is_bebop, user_code_to_run, user_args, buffer_size=20, network_caching=200):
+    def __init__(self, drone_object, is_bebop, user_args, buffer_size=20, network_caching=200):
         """
         Setup your vision object and initialize your buffers.  You won't start seeing pictures
         until you call open_video.
@@ -211,9 +211,9 @@ class DroneVisionGUI:
         self.network_caching = network_caching
 
         # save the user function and args for calling from the run button
-        self.user_code_to_run = user_code_to_run
-        self.user_args = user_args
-        self.user_thread = UserCodeToRun(user_code_to_run, user_args, self)
+#        self.user_code_to_run = user_code_to_run
+#        self.user_args = user_args
+#        self.user_thread = UserCodeToRun(user_code_to_run, user_args, self)
 
         # in case we never setup a user callback function
         self.user_vision_thread = None
@@ -360,14 +360,14 @@ class DroneVisionGUI:
         # TODO de skelet er bij gooien
         img = self.buffer[self.buffer_index]
             
-        if img is not None:
-            humans = self.e.inference(img, resize_to_default=(self.h > 0 and self.w > 0), upsample_size=4.0)
-            if len(humans) > 0:
-                image_with_human = TfPoseEstimator.draw_humans(img, humans, imgcopy=False)    
-                image_with_human = cv2.cvtColor(image_with_human, cv2.COLOR_BGR2RGB)
-                return img, humans, image_with_human
+#        if img is not None:
+#            humans = self.e.inference(img, resize_to_default=(self.h > 0 and self.w > 0), upsample_size=4.0)
+#            if len(humans) > 0:
+#                image_with_human = TfPoseEstimator.draw_humans(img, humans, imgcopy=False)    
+#                image_with_human = cv2.cvtColor(image_with_human, cv2.COLOR_BGR2RGB)
+#                return img, humans, image_with_human
         
-        return img, [], None
+        return img#, [], None
 
     def close_exit(self):
         """

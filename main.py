@@ -1,5 +1,5 @@
 from Bebop_edited import Bebop
-import DroneVisionGui_edited as DroneVisionGUI
+import DroneVisionGUI_edited as DroneVisionGUI
 
 
 
