@@ -23,6 +23,9 @@ class DroneController:
                 self.communication.last_command = -1
        
     def command_to_action(self, cmd):
+        if cmd == Action.ABORT:
+            print("ABORT nog maken") # TODO
+            return
         if cmd == Action.LOOK_UP:
             self.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=+16, duration=1)
             return
@@ -35,3 +38,4 @@ class DroneController:
         if cmd == Action.LOOK_RIGHT:
             self.bebop.pan_tilt_camera_velocity(pan_velocity=+16, tilt_velocity=0, duration=1)
             return
+        

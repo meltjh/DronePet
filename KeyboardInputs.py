@@ -22,5 +22,6 @@ class KeyboardInput:
             'w': Action.LOOK_UP,
             's': Action.LOOK_DOWN,
             'a': Action.LOOK_LEFT,
-            'd': Action.LOOK_RIGHT
+            'd': Action.LOOK_RIGHT,
+            'q': Action.ABORT
         }.get(inpt, Action.NOTHING) # default 
