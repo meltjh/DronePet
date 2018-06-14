@@ -41,7 +41,8 @@ def getImagesAndLabels(path):
 
     # Loop all the file path
     for imagePath in imagePaths:
-
+        if imagePath == 'dataset/.DS_Store':
+            continue
         # Get the image and convert it to grayscale
         PIL_img = Image.open(imagePath).convert('L')
 
