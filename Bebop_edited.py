@@ -182,7 +182,7 @@ class Bebop():
 
         :return: True if the command was sent and False otherwise
         """
-        command_tuple = self.command_parser.get_command_tuple("ardrone3", "Piloting", "Landing")
+        command_tuple = self.command_parser.get_command_tuple("ardrone3", "Piloting", "Emergency")
         return self.drone_connection.send_noparam_high_priority_command_packet(command_tuple)
 
     def is_landed(self):
@@ -369,7 +369,6 @@ class Bebop():
         self.drone_connection.send_param_command_packet(command_tuple, param_tuple=[tilt_velocity, pan_velocity],
                                                         param_type_tuple=['float', 'float'], ack=False)
 
-
         if (duration > 0):
             # wait for the specified duration
             start_time = time.time()
@@ -379,3 +378,81 @@ class Bebop():
             # send the stop command
             self.drone_connection.send_param_command_packet(command_tuple, param_tuple=[0, 0],
                                                             param_type_tuple=['float', 'float'], ack=False)
+
+
+
+    # Created by ourselfes
+    
+    def video_stabalisation_mode(self, mode):
+        """
+        Set the stabalisation mode for the video stream.
+        :param: mode: one of "roll, pitch, roll_pitch or none"
+  
+        :return: True if the command was sent and False otherwise
+        """
+
+        # handle case issues
+        fixed_mode = mode.lower()
+
+        if (fixed_mode not in ("roll", "pitch", "roll_pitch", "none")):
+            print("Error: %s is not a valid stream mode.  Must be one of %s" % (mode, "roll, pitch, roll_pitch or none"))
+            print("Ignoring command and returning")
+            return False
+        
+        (command_tuple, enum_tuple) = self.command_parser.get_command_tuple_with_enum("ardrone3",
+                                                                                      "PictureSettings", "VideoStabilizationMode", mode)
+
+        return self.drone_connection.send_enum_command_packet_ack(command_tuple,enum_tuple)
+
+
+    def video_resolution_mode(self, mode):
+        """
+        Set the resolution mode for both the video stream and recording.
+        :param: mode: one of "rec1080_stream480 or rec720_stream720"
+  
+        :return: True if the command was sent and False otherwise
+        """
+
+        # handle case issues
+        fixed_mode = mode.lower()
+
+        if (fixed_mode not in ("rec1080_stream480", "rec720_stream720")):
+            print("Error: %s is not a valid stream mode.  Must be one of %s" % (mode, "rec1080_stream480 or rec720_stream720"))
+            print("Ignoring command and returning")
+            return False
+        
+        (command_tuple, enum_tuple) = self.command_parser.get_command_tuple_with_enum("ardrone3",
+                                                                                      "PictureSettings", "VideoResolutionsChanged", mode)
+
+        return self.drone_connection.send_enum_command_packet_ack(command_tuple,enum_tuple)
+
+
+    def max_altitude(self, max_alt):
+        """
+        Set the resolution mode for both the video stream and recording.
+        :param: mode: one of "rec1080_stream480 or rec720_stream720"
+  
+        :return: True if the command was sent and False otherwise
+        """
+
+        # handle case issues
+#        fixed_mode = mode.lower()
+#
+#        if (fixed_mode not in ("rec1080_stream480", "rec720_stream720")):
+#            print("Error: %s is not a valid stream mode.  Must be one of %s" % (mode, "rec1080_stream480 or rec720_stream720"))
+#            print("Ignoring command and returning")
+#            return False
+        
+        (command_tuple, enum_tuple) = self.command_parser.get_command_tuple_with_enum("ardrone3",
+                                                                                      "PilotingSettings", "MaxAltitude", max_alt)
+
+        return self.drone_connection.send_enum_command_packet_ack(command_tuple,enum_tuple)
+    
+    
+    #TODO dat stabalisaren grond aan?
+    
+    def reset(self):
+
+        
+        command_tuple = self.command_parser.get_command_tuple("common", "Factory", "Reset")
+        return self.drone_connection.send_noparam_command_packet_ack(command_tuple)

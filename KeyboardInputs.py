@@ -19,9 +19,24 @@ class KeyboardInput:
             
     def input_to_command(self, inpt):
         return {
-            'w': Action.LOOK_UP,
-            's': Action.LOOK_DOWN,
-            'a': Action.LOOK_LEFT,
-            'd': Action.LOOK_RIGHT,
-            'q': Action.ABORT
-        }.get(inpt, Action.NOTHING) # default 
+            ']': Action.LOOK_UP,
+            '\\': Action.LOOK_DOWN,
+            '-': Action.LOOK_LEFT,
+            '=': Action.LOOK_RIGHT,
+            
+            'w': Action.MOVE_FORWARD,
+            's': Action.MOVE_BACKWARD,
+            'a': Action.MOVE_LEFT,
+            'd': Action.MOVE_RIGHT,
+            
+            'o': Action.MOVE_UP,
+            'l': Action.MOVE_DOWN,
+            'k': Action.ROTATE_LEFT,
+            ';': Action.ROTATE_RIGHT,
+            
+#            'z': Action.TAKEOFF,
+            'x': Action.SAVELAND,
+            
+            'q': Action.ABORT,
+            't': Action.TEST
+        }.get(inpt.lower(), Action.NOTHING) # default 

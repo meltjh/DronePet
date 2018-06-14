@@ -23,9 +23,8 @@ class DroneController:
                 self.communication.last_command = -1
        
     def command_to_action(self, cmd):
-        if cmd == Action.ABORT:
-            print("ABORT nog maken") # TODO
-            return
+
+        # Camera stuff        
         if cmd == Action.LOOK_UP:
             self.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=+16, duration=1)
             return
@@ -37,5 +36,64 @@ class DroneController:
             return
         if cmd == Action.LOOK_RIGHT:
             self.bebop.pan_tilt_camera_velocity(pan_velocity=+16, tilt_velocity=0, duration=1)
+            return
+        
+
+        # Movement stuff
+        if cmd == Action.MOVE_FORWARD:
+            self.bebop.fly_direct(roll=0, pitch=+50, yaw=0, vertical_movement=0, duration=1)
+            return
+        if cmd == Action.MOVE_BACKWARD:
+            self.bebop.fly_direct(roll=0, pitch=-50, yaw=0, vertical_movement=0, duration=1)
+            return
+        if cmd == Action.MOVE_LEFT:
+            self.bebop.fly_direct(roll=-50, pitch=0, yaw=0, vertical_movement=0, duration=1)
+            return
+        if cmd == Action.MOVE_RIGHT:
+            self.bebop.fly_direct(roll=+50, pitch=0, yaw=0, vertical_movement=0, duration=1)
+            return
+        if cmd == Action.MOVE_UP:
+            self.bebop.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=50, duration=1)
+            return
+        if cmd == Action.MOVE_DOWN:
+            self.bebop.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=-50, duration=1)
+            return
+        if cmd == Action.ROTATE_LEFT:
+            self.bebop.fly_direct(roll=0, pitch=0, yaw=-50, vertical_movement=0, duration=1)
+            return
+        if cmd == Action.ROTATE_RIGHT:
+            self.bebop.fly_direct(roll=0, pitch=0, yaw=50, vertical_movement=0, duration=1)
+            return
+        
+        
+        # Test stuff
+        if cmd == Action.ABORT:
+            print('ABORT')
+            self.bebop.emergency_land()
+            return
+        if cmd == Action.TAKEOFF:
+            print('TAKEOFF')
+            self.bebop.safe_takeoff(2)
+            return
+        if cmd == Action.SAVELAND:
+            print('SAVELAND')
+#            self.bebop.land()
+            self.bebop.safe_land(5)
+            return
+        
+#        if cmd == Action.TEST:
+#            self.bebop.reset()
+#            return
+        
+#        if cmd == Action.TEST:
+#            self.bebop.video_stabalisation_mode(mode="none")
+#            time.sleep(5)
+#            self.bebop.video_stabalisation_mode(mode="roll_pitch")            
+#            return
+            
+        if cmd == Action.TEST:
+            self.bebop.video_resolution_mode(mode="rec720_stream720")
+            time.sleep(5)
+            self.bebop.video_resolution_mode(mode="rec1080_stream480")            
             return
         
