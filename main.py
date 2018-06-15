@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
 
         gesture_input = GestureInput(communication, bebopVision)
-        bebopVision.set_user_callback_function(gesture_input.obtain_image, user_callback_args=None)
+        bebopVision.set_user_callback_function(gesture_input.processing_stream, user_callback_args=None)
         
         
         keyboardInput = KeyboardInput(communication)

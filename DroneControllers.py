@@ -59,10 +59,10 @@ class DroneController:
             self.bebop.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=-50, duration=1)
             return
         if cmd == Action.ROTATE_LEFT:
-            self.bebop.fly_direct(roll=0, pitch=0, yaw=-50, vertical_movement=0, duration=1)
+            self.bebop.fly_direct(roll=0, pitch=0, yaw=-100, vertical_movement=0, duration=1)
             return
         if cmd == Action.ROTATE_RIGHT:
-            self.bebop.fly_direct(roll=0, pitch=0, yaw=50, vertical_movement=0, duration=1)
+            self.bebop.fly_direct(roll=0, pitch=0, yaw=100, vertical_movement=0, duration=1)
             return
         
         

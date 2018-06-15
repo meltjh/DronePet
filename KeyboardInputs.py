@@ -34,7 +34,7 @@ class KeyboardInput:
             'k': Action.ROTATE_LEFT,
             ';': Action.ROTATE_RIGHT,
             
-#            'z': Action.TAKEOFF,
+            'z': Action.TAKEOFF,
             'x': Action.SAVELAND,
             
             'q': Action.ABORT,
