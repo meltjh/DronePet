@@ -3,6 +3,7 @@
 
 
 import cv2
+import os
 
 class FaceRecognition:
     
@@ -24,6 +25,38 @@ class FaceRecognition:
         
         self.CONFIDENCE_THRESHOLD = -1000#0.25
     
+        
+    # Stores the cropped faces for training.
+    # Modified, but originally from: http://thecodacus.com/
+    def store_training_faces(self, image, face_id):
+        image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        
+        # Initialize sample face image
+        count = -1
+    
+        path = "face_recognition_data/dataset/"
+        dir = os.path.dirname(path)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+    
+        # Detect frames of different sizes, list of faces rectangles
+        faces = self.faceCascade.detectMultiScale(image_gray, 1.3, 5)
+    
+        # Loops for each faces
+        for (x,y,w,h) in faces:
+    
+    
+            # Add to the set. So create a new name as long as the previous one exists
+            while True:
+                count += 1
+                
+                # Save the captured image into the datasets folder
+                f_name = "{}User.{}.{}.jpg".format(path, str(face_id), str(count))
+    
+                if not os.path.isfile(f_name):
+                    cv2.imwrite(f_name, image_gray[y:y+h,x:x+w])
+                    break
+    
     # Returns all confident faces
     # returns [(face_id, (x,y,w,h)), ...]
     def recognize_faces(self, image):
@@ -43,7 +76,10 @@ class FaceRecognition:
             confidence = round(100 - confidence, 2)
             
             if confidence >= self.CONFIDENCE_THRESHOLD:
-                faces_confident.append((face_id, (x,y,w,h)))
+                faces_confident.append((face_id, (x,y,w,h)), confidence)
+            
+        # Sort faces so that the most confident are in front of the list.
+        faces_confident.sort(key=lambda x: x[2], reverse = True)
             
         return faces_confident
             
