@@ -451,8 +451,22 @@ class Bebop():
     
     #TODO dat stabalisaren grond aan?
     
-    def reset(self):
+    
+    
+    
+    def SetMaxRotationSpeed(self, max_speed):
+
+        # handle case issues
+#        fixed_mode = mode.lower()
+#
+#        if (fixed_mode not in ("rec1080_stream480", "rec720_stream720")):
+#            print("Error: %s is not a valid stream mode.  Must be one of %s" % (mode, "rec1080_stream480 or rec720_stream720"))
+#            print("Ignoring command and returning")
+#            return False
+
+        command_tuple = self.command_parser.get_command_tuple("ardrone3", "SpeedSettings", "MaxRotationSpeed")
+
+        self.drone_connection.send_param_command_packet(command_tuple, param_tuple=[max_speed],
+                                                        param_type_tuple=['float'], ack=False)
 
         
-        command_tuple = self.command_parser.get_command_tuple("common", "Factory", "Reset")
-        return self.drone_connection.send_noparam_command_packet_ack(command_tuple)

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from tf_pose.estimator import TfPoseEstimator
 from tf_pose.networks import get_graph_path
 from FaceRecognition import FaceRecognition
+from Actions import Action
 import traceback
 
 
@@ -52,7 +53,7 @@ class GestureInput:
         self.poseEstimator = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(self.h,self.w))
         self.font = cv2.FONT_HERSHEY_SIMPLEX
         
-        self.face_id = 0
+        self.face_id = 1
         self.training = False
      
 #    def face_training(self):
@@ -120,9 +121,9 @@ class GestureInput:
         print('/////', len(skeletons_by_ids))
         return skeletons_by_ids
             
-    def gesture_recongition(self, image_original, image_drawn, specific_face_id = None):
+    def gesture_recognition(self, image_original, image_drawn, specific_face_id = None):
         if image_original is None:
-            print('No image given for gesture_recongition')
+            print('No image given for gesture_recognition')
             return None, None
         
         skeletons = self.poseEstimator.inference(image_original, upsample_size=4.0)
@@ -152,7 +153,25 @@ class GestureInput:
 
             if correct_skeleton is not None:
                 skeletons = [correct_skeleton]
-            
+                
+                nose = correct_skeleton.body_parts[0]
+                nose_x_scale = nose.x
+                
+                print("NOSE SCALE", nose_x_scale)
+                middle = 0.5
+                margin = 0
+                
+                if nose_x_scale > middle + margin:
+                    offset = nose_x_scale - (middle + margin)
+                    self.communication.last_command = Action.LOOK_RIGHT
+                    print("GO TO RIGHT")
+                elif nose_x_scale < middle - margin:
+                    offset = (middle - margin) - nose_x_scale
+                    self.communication.last_command = Action.LOOK_LEFT
+                    print("GO TO LEFT")
+                
+                self.communication.last_command_value = ((offset+1)**10-1)
+                
             
         
         image_drawn = TfPoseEstimator.draw_humans(image_drawn, skeletons, imgcopy=False)
@@ -190,7 +209,7 @@ class GestureInput:
             
                 # Skeleton recognition
                 # TODO de image_original als patch
-                image_patch, image_drawn = self.gesture_recongition(image_original=image_original, image_drawn=image_drawn, specific_face_id=self.face_id)
+                image_patch, image_drawn = self.gesture_recognition(image_original=image_original, image_drawn=image_drawn, specific_face_id=self.face_id)
                 
     
                 self.communication.last_image_processed = image_drawn

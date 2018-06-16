@@ -23,6 +23,8 @@ class DroneController:
                 self.communication.last_command = -1
        
     def command_to_action(self, cmd):
+        value = self.communication.last_command_value
+        self.communication.last_command_value = None
 
         # Camera stuff        
         if cmd == Action.LOOK_UP:
@@ -32,12 +34,17 @@ class DroneController:
             self.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=-16, duration=1)
             return
         if cmd == Action.LOOK_LEFT:
-            self.bebop.pan_tilt_camera_velocity(pan_velocity=-16, tilt_velocity=0, duration=1)
+            if value is None:
+                self.bebop.pan_tilt_camera_velocity(pan_velocity=-16, tilt_velocity=0, duration=1)
+            else:
+                self.bebop.pan_tilt_camera_velocity(pan_velocity=-value, tilt_velocity=0, duration=0.5)
             return
         if cmd == Action.LOOK_RIGHT:
-            self.bebop.pan_tilt_camera_velocity(pan_velocity=+16, tilt_velocity=0, duration=1)
+            if value is None:
+                self.bebop.pan_tilt_camera_velocity(pan_velocity=+16, tilt_velocity=0, duration=1)
+            else:
+                self.bebop.pan_tilt_camera_velocity(pan_velocity=+value, tilt_velocity=0, duration=0.5)
             return
-        
 
         # Movement stuff
         if cmd == Action.MOVE_FORWARD:
@@ -92,8 +99,10 @@ class DroneController:
 #            return
             
         if cmd == Action.TEST:
-            self.bebop.video_resolution_mode(mode="rec720_stream720")
-            time.sleep(5)
-            self.bebop.video_resolution_mode(mode="rec1080_stream480")            
+            self.bebop.SetMaxRotationSpeed(60.0)
+            
+#            self.bebop.video_resolution_mode(mode="rec720_stream720")
+#            time.sleep(5)
+#            self.bebop.video_resolution_mode(mode="rec1080_stream480")            
             return
         

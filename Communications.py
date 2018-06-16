@@ -3,6 +3,7 @@ from Actions import Action
 class Communication:
     active = True
     last_command = Action.NOTHING
+    last_command_value = None
     last_image_original = None
     last_image_processed = None
     
