@@ -6,6 +6,34 @@ from tf_pose.networks import get_graph_path
 from FaceRecognition import FaceRecognition
 import traceback
 
+
+
+from enum import Enum
+class Bodyparts(Enum):
+    Nose = 0
+    Neck = 1
+    RShoulder = 2
+    RElbow = 3
+    RWrist = 4
+    LShoulder = 5
+    LElbow = 6
+    LWrist = 7
+    RHip = 8
+    RKnee = 9
+    RAnkle = 10
+    LHip = 11
+    LKnee = 12
+    LAnkle = 13
+    REye = 14
+    LEye = 15
+    REar = 16
+    LEar = 17
+    Background = 18
+    
+CocoColors = [[255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0], [85, 255, 0], [0, 255, 0],
+              [0, 255, 85], [0, 255, 170], [0, 255, 255], [0, 170, 255], [0, 85, 255], [0, 0, 255], [85, 0, 255],
+              [170, 0, 255], [255, 0, 255], [255, 0, 170], [255, 0, 85]]
+    
 class GestureInput:
     communication = None
     vision = None
@@ -24,7 +52,7 @@ class GestureInput:
         self.poseEstimator = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(self.h,self.w))
         self.font = cv2.FONT_HERSHEY_SIMPLEX
         
-        self.face_id = 1
+        self.face_id = 0
         self.training = False
      
 #    def face_training(self):
@@ -66,7 +94,32 @@ class GestureInput:
         
         return image_patch, image_drawn
 
-
+    
+    def id_skeletons(self, image_original, skeletons):
+        skeletons_by_ids = []
+        for skeleton in skeletons: 
+            top, bottom, left, right = self.faceRecognition.face_patch_given_skeleton(image_original, skeleton)
+            # Obtain the patch
+            print('lr ',left, right)
+            image_patch = image_original[top:bottom, left:right, :]
+            
+            print('image_patch_size', image_patch.shape)
+#            plt.imshow(image_patch)
+#            plt.show()
+            
+            
+            # Recogize faces
+            faces = self.faceRecognition.recognize_faces(image_patch)
+            print('++++', len(faces))
+            for face_id, (x,y,w,h), confidence in faces:
+                skeletons_by_ids.append((skeleton, face_id, (x,y,w,h), confidence))
+                
+            # Sort faces so that the most confident are in front of the list.
+        skeletons_by_ids.sort(key=lambda x: x[3], reverse = True)
+        
+        print('/////', len(skeletons_by_ids))
+        return skeletons_by_ids
+            
     def gesture_recongition(self, image_original, image_drawn, specific_face_id = None):
         if image_original is None:
             print('No image given for gesture_recongition')
@@ -80,66 +133,27 @@ class GestureInput:
         
         if specific_face_id is not None:
             print("\n\nskeletons printen")
-            
-#            from tf_pose import common
-#            from tf_pose.common import CocoPart
-#            image_h = image_original.shape[0]
-#            image_w = image_original.shape[1]
-#            
-#            
-#            npimg = image_original
-#            centers = []
-#            for skeleton in skeletons:
-#                
-#                
-#                
-#                for i in range(CocoPart.Background.value):
-#                    if i not in skeleton.body_parts.keys():
-#                        continue
-#    
-#    
-#                    
-#                    body_part = skeleton.body_parts[i]
-#                    center = (int(body_part.x * image_w + 0.5), int(body_part.y * image_h + 0.5))
-#                    centers[i] = center
-#                    cv2.circle(npimg, center, 3, common.CocoColors[i], thickness=3, lineType=8, shift=0)
-#                
-#              
-#            plt.imshow(npimg)
-#            plt.show(npimg)
-#            exit
+            skeletons_by_ids = self.id_skeletons(image_original, skeletons)
+
+            print('----',len(skeletons_by_ids))
+
+            correct_skeleton = None
+            correct_pos = None
+            for skeleton, face_id, (x,y,w,h), _ in skeletons_by_ids:
                 
-#            for skeleton in skeletons:
-#                print("-------")
-#                for key, value in skeleton.items():
-#                    print("key", key, ' value', value)
+                print('face_id',face_id)
                 
-                
-#                class CocoPart(Enum):
-#    Nose = 0
-#    Neck = 1
-#    RShoulder = 2
-#    RElbow = 3
-#    RWrist = 4
-#    LShoulder = 5
-#    LElbow = 6
-#    LWrist = 7
-#    RHip = 8
-#    RKnee = 9
-#    RAnkle = 10
-#    LHip = 11
-#    LKnee = 12
-#    LAnkle = 13
-#    REye = 14
-#    LEye = 15
-#    REar = 16
-#    LEar = 17
-#    Background = 18
-                
-#            print(skeletons)
+                if face_id == specific_face_id:
+                    correct_skeleton = skeleton
+                    correct_pos = (x,y,w,h)
+                    
+                    image_drawn = self.faceRecognition.draw_face(image_drawn, correct_pos, specific_face_id, box_color = (0, 0, 0))
+                    break
+
+            if correct_skeleton is not None:
+                skeletons = [correct_skeleton]
             
             
-        
         
         image_drawn = TfPoseEstimator.draw_humans(image_drawn, skeletons, imgcopy=False)
 
@@ -157,25 +171,29 @@ class GestureInput:
                 
                 if image_original is None:
                     print('No image found')
-                    self.communication.last_image = None
+                    self.communication.last_image_processed = None
+                    self.communication.last_image_original = None
                     return
                 
                 image_original = cv2.cvtColor(image_original, cv2.COLOR_BGR2RGB)
+                
+                self.communication.last_image_original = image_original
             
                 # Saving faces to train later with
                 if self.training == True:
                     self.faceRecognition.store_training_faces(image_original, self.face_id)
                 
                 # Face recognition
+                image_drawn = image_original
 #                image_patch, image_drawn = self.face_recognition(image_original=image_original, image_drawn=image_original, specific_face_id=self.face_id)
             
             
                 # Skeleton recognition
                 # TODO de image_original als patch
-                image_patch, image_drawn = self.gesture_recongition(image_original=image_original, image_drawn=image_original, specific_face_id=self.face_id)
+                image_patch, image_drawn = self.gesture_recongition(image_original=image_original, image_drawn=image_drawn, specific_face_id=self.face_id)
                 
     
-                self.communication.last_image = image_drawn
+                self.communication.last_image_processed = image_drawn
             
             except Exception as e:
                 print("Error in Processin_stream, type error: " + str(e))

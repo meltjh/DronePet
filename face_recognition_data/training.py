@@ -14,7 +14,7 @@ import numpy as np
 # Import Python Image Library (PIL)
 from PIL import Image
 
-import os
+#import os
 
 def assure_path_exists(path):
     dir = os.path.dirname(path)
