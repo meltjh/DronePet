@@ -15,7 +15,7 @@ class KeyboardInput:
             
             inpt = input("Keyboard input: ")
             
-            self.communication.last_command = self.input_to_command(inpt)
+            self.communication.send_command(self.input_to_command(inpt))
             
     def input_to_command(self, inpt):
         return {

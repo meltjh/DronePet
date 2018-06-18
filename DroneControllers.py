@@ -1,37 +1,38 @@
 from Actions import Action
-import time
+#import time
 
 class DroneController:
-    communication = None
     bebop = None
     
-    def __init__(self, communication, bebop):
+    def __init__(self, bebop):
         print('Controller')
-        self.communication = communication
         self.bebop = bebop
      
-    def listen_to_controls(self):
-        print('listen_to_controls')
-        while self.communication.active == True:
-            time.sleep(0.05)
-            
-            if self.communication.last_command != -1:
-                print(self.communication.last_command)
-                
-                self.command_to_action(self.communication.last_command)
-
-                self.communication.last_command = -1
+#    def listen_to_controls(self):
+#        print('listen_to_controls')
+#        while self.communication.active == True:
+#            time.sleep(0.05)
+#            self.perform_action()
        
-    def command_to_action(self, cmd):
-        value = self.communication.last_command_value
-        self.communication.last_command_value = None
+    def perform_action(self, command, command_value):
+        if command != -1 and command != Action.NOTHING:
+            print(command)
+            self.command_to_action(command, command_value)
+        
+    def command_to_action(self, cmd, value):
 
         # Camera stuff        
         if cmd == Action.LOOK_UP:
-            self.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=+16, duration=1)
+            if value is None:
+                self.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=+16, duration=1)
+            else:
+                self.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=+value, duration=1)
             return
         if cmd == Action.LOOK_DOWN:
-            self.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=-16, duration=1)
+            if value is None:
+                self.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=-16, duration=1)
+            else:
+                self.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=-value, duration=1)
             return
         if cmd == Action.LOOK_LEFT:
             if value is None:
@@ -99,10 +100,17 @@ class DroneController:
 #            return
             
         if cmd == Action.TEST:
-            self.bebop.SetMaxRotationSpeed(60.0)
+#            self.bebop.SetMaxRotationSpeed(60.0)
             
-#            self.bebop.video_resolution_mode(mode="rec720_stream720")
+            
+#            self.bebop.SetMotionDetection(False)
 #            time.sleep(5)
-#            self.bebop.video_resolution_mode(mode="rec1080_stream480")            
+#            self.bebop.SetMotionDetection(True)
+            
+            
+            
+            self.bebop.video_resolution_mode("rec720_stream720")
+#            time.sleep(5)
+#            self.bebop.video_resolution_mode("rec1080_stream480")            
             return
         

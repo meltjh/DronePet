@@ -7,17 +7,17 @@ from threading import Thread
 
 
 from Communications import Communication   
-from GestureInputs import GestureInput
 from KeyboardInputs import KeyboardInput
 from WebsiteOutputs import WebsiteOutput
 from DroneControllers import DroneController
+from StreamInputs import StreamInput
 
         
 
         
 if __name__ == "__main__":
     bebop = Bebop()
-    communication = Communication()
+    
 
     # connect to the bebop
     success = bebop.connect(3)
@@ -28,8 +28,13 @@ if __name__ == "__main__":
         bebopVision = DroneVisionGUI.DroneVisionGUI(bebop, is_bebop=True, user_args=(bebop, ))
 
 
-        gesture_input = GestureInput(communication, bebopVision)
-        bebopVision.set_user_callback_function(gesture_input.processing_stream, user_callback_args=None)
+
+        droneController = DroneController(bebop)
+        communication = Communication(droneController)
+        
+
+        stream_input = StreamInput(communication, bebopVision)
+        bebopVision.set_user_callback_function(stream_input.processing_stream, user_callback_args=None)
         
         
         keyboardInput = KeyboardInput(communication)
@@ -42,9 +47,9 @@ if __name__ == "__main__":
         thread_WebsiteOutput.start()
         
         
-        droneController = DroneController(communication, bebop)
-        thread_Controller = Thread(target = droneController.listen_to_controls, args = ( ))
-        thread_Controller.start()
+#        droneController = DroneController(communication, bebop)
+#        thread_Controller = Thread(target = droneController.listen_to_controls, args = ( ))
+#        thread_Controller.start()
         
         bebopVision.open_video()
     else:

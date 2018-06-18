@@ -2,13 +2,17 @@ from Actions import Action
 
 class Communication:
     active = True
-    last_command = Action.NOTHING
-    last_command_value = None
     last_image_original = None
     last_image_processed = None
+    droneController = None
     
-    def __init__(self):
+    def __init__(self, droneController):
         print("Communication class is initialized")
 
-#        self.last_command = -1
-#        self.last_image = None
+        self.droneController = droneController
+        
+        
+    def send_command(self, command, command_value = None):
+#        if self.active == True:
+        if command != Action.NOTHING:
+            self.droneController.perform_action(command, command_value)

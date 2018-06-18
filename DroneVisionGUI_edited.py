@@ -189,7 +189,7 @@ class DroneVisionGUI:
         :param buffer_size: number of frames to buffer in memory.  Defaults to 10.
         :param network_caching: buffering time in milli-seconds, 200 should be enough, 150 works on some devices
         """
-        self.fps = 1
+        self.fps = 2
         self.buffer_size = buffer_size
         self.drone_object = drone_object
         self.is_bebop = is_bebop
@@ -219,9 +219,9 @@ class DroneVisionGUI:
         self.user_vision_thread = None
         
         
-        self.h = 432
-        self.w = 368
-        self.e = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(self.h,self.w))
+#        self.h = 432
+#        self.w = 368
+#        self.e = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(self.h,self.w))
 
     def run_user_code(self, button):
         """
@@ -310,7 +310,7 @@ class DroneVisionGUI:
 
         # setup the timer for snapshots
         self.timer = QTimer(self.vlc_gui)
-        self.timer.setInterval(500)
+        self.timer.setInterval(1.0 / self.fps)
         self.timer.timeout.connect(self._buffer_vision)
         self.timer.start()
 

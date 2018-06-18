@@ -405,28 +405,29 @@ class Bebop():
         return self.drone_connection.send_enum_command_packet_ack(command_tuple,enum_tuple)
 
 
-    def video_resolution_mode(self, mode):
-        """
-        Set the resolution mode for both the video stream and recording.
-        :param: mode: one of "rec1080_stream480 or rec720_stream720"
-  
-        :return: True if the command was sent and False otherwise
-        """
+    def video_resolution_mode(self, resolution_mode):
 
-        # handle case issues
-        fixed_mode = mode.lower()
-
-        if (fixed_mode not in ("rec1080_stream480", "rec720_stream720")):
-            print("Error: %s is not a valid stream mode.  Must be one of %s" % (mode, "rec1080_stream480 or rec720_stream720"))
-            print("Ignoring command and returning")
-            return False
         
-        (command_tuple, enum_tuple) = self.command_parser.get_command_tuple_with_enum("ardrone3",
-                                                                                      "PictureSettings", "VideoResolutionsChanged", mode)
+        (command_tuple, enum_tuple) = self.command_parser.get_command_tuple_with_enum("ardrone3", "PictureSettings", "VideoResolutions", resolution_mode)
+        success1 = self.drone_connection.send_enum_command_packet_ack(command_tuple,enum_tuple)
 
-        return self.drone_connection.send_enum_command_packet_ack(command_tuple,enum_tuple)
+        (command_tuple, enum_tuple) = self.command_parser.get_command_tuple_with_enum("ardrone3", "PictureSettings", "VideoFramerate", "24_FPS")
+        success2 = self.drone_connection.send_enum_command_packet_ack(command_tuple,enum_tuple)
+
+        (command_tuple, enum_tuple) = self.command_parser.get_command_tuple_with_enum("ardrone3", "MediaStreaming", "VideoStreamMode", "high_reliability")
+#        (command_tuple, enum_tuple) = self.command_parser.get_command_tuple_with_enum("ardrone3", "MediaStreaming", "VideoStreamMode", "high_reliability_low_framerate")
+        success3 = self.drone_connection.send_enum_command_packet_ack(command_tuple,enum_tuple)
 
 
+
+        return success1 and success2 and success3
+#        command_tuple = self.command_parser.get_command_tuple("ardrone3", "PictureSettings", "VideoResolutions")
+#
+#        self.drone_connection.send_param_command_packet(command_tuple, param_tuple=[mode],
+#                                                        param_type_tuple=['string'], ack=False)
+        
+        
+        
     def max_altitude(self, max_alt):
         """
         Set the resolution mode for both the video stream and recording.
@@ -469,4 +470,18 @@ class Bebop():
         self.drone_connection.send_param_command_packet(command_tuple, param_tuple=[max_speed],
                                                         param_type_tuple=['float'], ack=False)
 
+    def SetMotionDetection(self, is_set):
+
+        # handle case issues
+#        fixed_mode = mode.lower()
+#
+#        if (fixed_mode not in ("rec1080_stream480", "rec720_stream720")):
+#            print("Error: %s is not a valid stream mode.  Must be one of %s" % (mode, "rec1080_stream480 or rec720_stream720"))
+#            print("Ignoring command and returning")
+#            return False
+
+        command_tuple = self.command_parser.get_command_tuple("ardrone3", "PilotingSettings", "SetMotionDetectionMode")
+
+        self.drone_connection.send_param_command_packet(command_tuple, param_tuple=[is_set],
+                                                        param_type_tuple=['u8'], ack=False)
         
