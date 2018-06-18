@@ -75,12 +75,12 @@ class StreamInput:
 
                 # Skeleton recognition
                 patch_margins = (top, image_h-bottom, left, image_w-right)
-                face_top, face_bottom, face_left, face_right= self.gestureRecognition.main(image_original=image_original_patch, image_drawn=image_drawn_patch, specific_face_id=self.face_id, patch_margins=patch_margins)
+                face_top, face_bottom, face_left, face_right = self.gestureRecognition.main(image_original=image_original_patch, image_drawn=image_drawn_patch, specific_face_id=self.face_id, patch_margins=patch_margins)
                 
                 # Combine the patch with the full image
                 image_drawn[top:bottom, left:right, :] = image_drawn_patch
                 self.communication.last_image_processed = image_drawn
-
+                
             
                 # Save the face patch that was found by gestureRecognition
                 if self.training == Training.IdTraining:
