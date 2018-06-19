@@ -27,17 +27,17 @@ class Bodyparts(Enum):
     
 class GestureRecognition:
     
-    def __init__(self, faceRecognition, communication):
+    def __init__(self, faceRecognition, droneController):
         
         # Detection parameters
-        self.h = 640#432
-        self.w = 480#368
+        self.h = 432 #640
+        self.w = 368 #480
         # Load the trained mode
         self.poseEstimator = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(self.h,self.w))
     
         # Face recognition is used in id_skeleton
         self.faceRecognition = faceRecognition
-        self.communication = communication
+        self.droneController = droneController
             
             
             
@@ -83,7 +83,7 @@ class GestureRecognition:
         if offset != 0:
             print("OFFSET X" , offset)
             value = (((offset+1)**11)-1)
-            self.communication.send_command(command, value)
+            self.droneController.perform_action(command, value)
     
     
     
@@ -111,7 +111,7 @@ class GestureRecognition:
         if offset != 0:
             print("OFFSET Y" , offset)
             value = (((offset+1)**9)-1)
-            self.communication.send_command(command, value)
+            self.droneController.perform_action(command, value)
             
     # Given the eyes, nose and if possible the ears, estimate the face patch
     # which can then be fed to face recognition to determine the id of the skeleton.

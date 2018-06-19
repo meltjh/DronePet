@@ -7,12 +7,6 @@ class DroneController:
     def __init__(self, bebop):
         print('Controller')
         self.bebop = bebop
-     
-#    def listen_to_controls(self):
-#        print('listen_to_controls')
-#        while self.communication.active == True:
-#            time.sleep(0.05)
-#            self.perform_action()
        
     def perform_action(self, command, command_value):
         if command != -1 and command != Action.NOTHING:

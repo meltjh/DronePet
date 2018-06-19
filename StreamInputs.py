@@ -21,35 +21,33 @@ class StreamInput:
     faceRecognition = None
     face_id = None
     
-    def __init__(self, communication, vision):
+    def __init__(self, vision, streamOutput, droneController):
         print('GestureInput')
-        self.communication = communication
+        self.droneController = droneController
         self.vision = vision
         
         self.faceRecognition = FaceRecognition()
-        self.gestureRecognition = GestureRecognition(self.faceRecognition, self.communication)
+        self.gestureRecognition = GestureRecognition(self.faceRecognition, self.droneController)
+        self.streamOutput = streamOutput
         
         # If true, save the patches of the face found by the id
-        self.face_id = 1
+        self.face_id = 0 # TODO, overal nu richard ipv de naam van de persoon oid??
         self.training = Training.NoTraining
         
     def processing_stream(self, args):
         print('processing_stream')
         
-        while self.communication.active == True:
+        while True:
             try:
                 # Obtain a image from the stream
                 image_original = self.vision.get_latest_valid_picture()
                 
                 if image_original is None:
                     print('No image found')
-                    self.communication.last_image_processed = None
-                    self.communication.last_image_original = None
+                    self.streamOutput.update_stream(None)
                     return
                 
                 image_original = cv2.cvtColor(image_original, cv2.COLOR_BGR2RGB)
-                
-                self.communication.last_image_original = image_original
                 image_drawn = image_original.copy()
                 [image_h, image_w, _] = image_original.shape
                 
@@ -66,7 +64,7 @@ class StreamInput:
 
                 if max(left, top, right, bottom) < 0:
                     print('No patch found by face_recognition')
-                    self.communication.last_image_processed = image_drawn
+                    self.streamOutput.update_stream(image_drawn)
                     return
 
                 # Crop the images to feed to the skeleton recognition
@@ -79,7 +77,7 @@ class StreamInput:
                 
                 # Combine the patch with the full image
                 image_drawn[top:bottom, left:right, :] = image_drawn_patch
-                self.communication.last_image_processed = image_drawn
+                self.streamOutput.update_stream(image_drawn)
                 
             
                 # Save the face patch that was found by gestureRecognition

@@ -4,18 +4,15 @@ import time
 class KeyboardInput:
     communication = None
     
-    def __init__(self, communication):
+    def __init__(self, droneController):
         print('KeyboardInput')
-        self.communication = communication
+        self.droneController = droneController
    
     def wait_for_input(self):
         print('wait_for_input')
-        while self.communication.active == True:
-            time.sleep(0.1)
-            
+        while True:
             inpt = input("Keyboard input: ")
-            
-            self.communication.send_command(self.input_to_command(inpt))
+            self.droneController.perform_action(self.input_to_command(inpt))
             
     def input_to_command(self, inpt):
         return {
