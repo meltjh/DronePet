@@ -8,7 +8,7 @@ import os
 
 # Create a VideoCapture object and read from input file
 video_name = "S001C003P005R001A023_rgb"
-cap = cv2.VideoCapture("full_vids/short_{}.avi".format(video_name))
+cap = cv2.VideoCapture("full_vids/{}.avi".format(video_name))
 fourcc = cv2.VideoWriter_fourcc(*'jpeg')
 
 # Create directory for cropped videos.
@@ -16,7 +16,7 @@ cropped_vids_directory = "cropped_vids"
 if not os.path.exists(cropped_vids_directory):
     os.makedirs(cropped_vids_directory)
 
-out = cv2.VideoWriter("{}/{}.avi".format(cropped_vids_directory, video_name), fourcc, 30.0, 
+out = cv2.VideoWriter("{}/short_{}.avi".format(cropped_vids_directory, video_name), fourcc, 30.0, 
                       (800, 800), True)
  
 # Check if video opened successfully
@@ -29,14 +29,14 @@ cv2.startWindowThread()
 i = 0
 num_frames = 0
 begin_frame = 17
-end_frame = 63
+max_frame = 62
 
 # Read until video is completed
 while(cap.isOpened()):
     # Capture frame-by-frame
     ret, frame = cap.read()
     if ret:
-        if i >= begin_frame:
+        if i >= begin_frame and i <= max_frame:
             
             # Crop to get the center of the frame.
             frame = frame[140:940, 560:1360]
@@ -63,7 +63,11 @@ while(cap.isOpened()):
         print("Number of frames before: ", i)
         print("Number of frames after: ", num_frames)
         print("Begin frame: ", begin_frame)
-        print("End frame: ", end_frame - 1)
+        if max_frame >= i:
+            last_frame = i - 1
+        else:
+            last_frame = max_frame
+        print("End frame: ", last_frame)
         break
  
 # When everything done, release.
