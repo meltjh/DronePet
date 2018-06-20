@@ -30,8 +30,8 @@ class GestureRecognition:
     def __init__(self, faceRecognition, droneController):
         
         # Detection parameters
-        self.h = 432 #640
-        self.w = 368 #480
+        self.h = 352 #640
+        self.w = 352 #480
         # Load the trained mode
         self.poseEstimator = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(self.h,self.w))
     

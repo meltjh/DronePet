@@ -20,7 +20,7 @@ class FaceRecognition:
         self.font = cv2.FONT_HERSHEY_SIMPLEX
         
         # Detection parameters
-        self.confidenceThreshold = 0.25
+        self.confidenceThreshold =  0.25
         self.train_count = -1
     
       
@@ -130,6 +130,8 @@ class FaceRecognition:
         
         top = max(0, face_top - margin_top)
         bottom = min(img_height, face_bottom + margin_bottom)
+        
+        print(bottom - top, right-left)
         
         return top, bottom, left, right
 

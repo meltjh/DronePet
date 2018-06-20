@@ -71,33 +71,53 @@ def get_small_dataset_data():
  
     return dataset_x, dataset_y
 
-dataset_x, dataset_y = get_small_dataset_data()  
+#dataset_x, dataset_y = get_small_dataset_data()  
     
-#    #print(len(new_dataset), 'items')
-#    #for i in range(len(new_dataset_x)): 
-#    #    print("{}: {}".format(new_dataset[i][0], new_dataset[i][1]))
-#
-#    return new_dataset, DATASET_Y
+def crop_video(frames, length):
+    if len(frames) < length:
+        print("Less than {} frames available ({}).", length, len(frames))
+    
+    cropped_videos = []
+    for i in range(len(frames) - length + 1):
+        cropped_videos.append(frames[i:i+length])
+    return cropped_videos
 
+def crop_videos(dataset_x, dataset_y, length):
+    _, num_frames, num_joints = dataset_x.shape
+    num_videos, num_classes = dataset_y.shape
 
-#from collections import defaultdict
+    num_cropped_videos_per_video= num_frames - length + 1
+    
+    dataset_x_new = np.zeros([num_videos*num_cropped_videos_per_video, length, num_joints])
+    dataset_y_new = np.zeros([num_videos*num_cropped_videos_per_video, num_classes])
+    
+    for i in range(num_videos):
+        frames = dataset_x[i]
+        cropped_videos = crop_video(frames, length)  
+        dataset_x_new[i*num_cropped_videos_per_video:(i+1)*num_cropped_videos_per_video] = cropped_videos
+        
+        # Create a matrix of one-hot-vector [0,...,1,...0] for num_cropped_videos_per_video times.
+        dataset_y_block = np.tile(dataset_y[i], (num_cropped_videos_per_video,1))
+        dataset_y_new[i*num_cropped_videos_per_video:(i+1)*num_cropped_videos_per_video] = dataset_y_block
+        
+    return dataset_x_new, dataset_y_new
+    
+    
+#frames = [[1,2],[3,4],[5,6],[7,8],[9,10],[10,11]]
+#length = 4
+##print(crop_video(frames, length))
 #
-## Returns a dict id = [[[points1],[points2],...],...]
-#def get_small_dataset_sequences():
-#    
-#    # The ratios of movement in a single sequence
-#    OFFSET_RATIOS = [0.98, 1.01, 1.05, 1.1, 1.15, 1.12, 1.1, 1.08, 1.09]
-#        
-#    dataset, classes = get_small_dataset_data()
-#    
-#    new_dataset = defaultdict(lambda: [])
-#    for x, y in dataset:
-#        
-#        new_sequence = []
-#        for offset_ratio in OFFSET_RATIOS:
-#            new_sequence.append([round(el*offset_ratio,2) for el in x])
-#            
-#        new_dataset[y].append(new_sequence)
-#    
-#    return new_dataset, classes, len(OFFSET_RATIOS)
 #
+#
+#dataset_x = np.zeros([2, 6, 2])
+#dataset_y = np.zeros([2, 7])
+#
+#
+#dataset_x[0] = frames
+#dataset_x[1] = frames
+#
+#dataset_y[0] = [0,0,1,0,0,0,0]
+#dataset_y[1] = [0,0,0,1,0,0,0]
+#
+#dataset_x_new, dataset_y_new = crop_videos(dataset_x, dataset_y, length)
+#print(dataset_x_new, dataset_y_new)
