@@ -9,25 +9,32 @@ tf.reset_default_graph()
 #mnist=input_data.read_data_sets("/tmp/data/",one_hot=True)
 
 ordered_dataset_x, ordered_dataset_y = dd.get_small_dataset_data()
-c = list(zip(ordered_dataset_x, ordered_dataset_y))
+
+crop_size = 5
+ordered_dataset_x_cropped, ordered_dataset_y_cropped = dd.crop_videos(ordered_dataset_x, ordered_dataset_y, crop_size)
+_, num_frames, num_joints = ordered_dataset_x_cropped.shape
+num_videos, num_classes = ordered_dataset_y_cropped.shape
+
+print(num_videos, num_frames, num_classes, num_joints)
+
+c = list(zip(ordered_dataset_x_cropped, ordered_dataset_y_cropped))
 random.shuffle(c)
 dataset_x, dataset_y = zip(*c)
 
 
-
 #define constants
 #unrolled through 28 time steps
-time_steps=21
+time_steps=crop_size
 #hidden LSTM units
 num_units=128
 #rows of 28 pixels
-n_input=4
+n_input=num_joints
 #learning rate for adam
 learning_rate=0.001
 #mnist is meant to be classified in 10 classes(0-9).
-n_classes=9
+n_classes=num_classes
 #size of batch
-batch_size=10
+batch_size=40
 
 #weights and biases of appropriate shape to accomplish above task
 out_weights=tf.Variable(tf.random_normal([num_units,n_classes]))
@@ -67,8 +74,8 @@ num_tests = 0
 #initialize variables
 init=tf.global_variables_initializer()
 with tf.Session() as sess:
+    sess.run(init)
     for j in range(num_epochs): # Epoch
-        sess.run(init)
         i = 0
         while i < runs_per_epoch:
     #        batch_x,batch_y=mnist.train.next_batch(batch_size=batch_size)
