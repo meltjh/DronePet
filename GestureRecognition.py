@@ -34,7 +34,7 @@ class GestureRecognition:
         
     
         # Load the trained model for different ratios
-        scales = [(22,40)]#[(22,60),(22,50),(22,40),(22,30),(22,22)]
+        scales = [(22,60),(22,50),(22,40),(22,30),(22,22)]
         self.pose_estimators = []
         self.pose_estimators_ratios = []
         for h, w in scales:
