@@ -229,7 +229,8 @@ class GestureRecognition:
         return skeletons_by_ids
     
     
-    def main(self, image_original, image_drawn, specific_face_id, patch_margins = (0,0,0,0)):
+    # Draws the skeleton and returns the exact relative face position of the given id, or if None, the first face.
+    def main(self, image_original, image_drawn, specific_face_id = None, patch_margins = (0,0,0,0)):
         if image_original is None:
             print('No image given for gesture_recognition')
             return (-1, -1, -1, -1)
@@ -246,7 +247,7 @@ class GestureRecognition:
         skeletons_by_ids = self.id_skeletons(image_original, image_drawn, skeletons)
 
         for skeleton, face_id, (face_top, face_bottom, face_left, face_right), _ in skeletons_by_ids:
-            if face_id == specific_face_id:
+            if specific_face_id is None or face_id == specific_face_id:
                 name = self.faceRecognition.id_to_name(specific_face_id)
                 correct_skeleton = skeleton
                 
