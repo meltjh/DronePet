@@ -97,13 +97,13 @@ class GestureRecognition:
         
     
         # Load the trained model for different ratios
-        scales = [(22,60),(22,50),(22,40),(22,30),(22,22)]
+        scales = [(27,23)]#[(60,23),(50,23),(40,23),(30,23),(23,23)]
         self.pose_estimators = []
         self.pose_estimators_ratios = []
-        for h, w in scales:
+        for w, h in scales:
             ratio = w/h
             self.pose_estimators_ratios.append(ratio)
-            self.pose_estimators.append(TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(h*16, w*16)))
+            self.pose_estimators.append(TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(w*16, h*16)))
         self.pose_estimators_ratios = np.asarray(self.pose_estimators_ratios)
     
         # Face recognition is used in id_skeleton
@@ -135,7 +135,7 @@ class GestureRecognition:
         nose_x_scale, nose_y_scale = self.relative_to_absolute_pos(patch_shape, patch_margins, skeleton.body_parts[0])
         
         
-        print("NOSE SCALE X", nose_x_scale)
+#        print("NOSE SCALE X", nose_x_scale)
         middle = 0.5
         margin = 0.05
         
@@ -144,43 +144,43 @@ class GestureRecognition:
 #            offset = nose_x_scale - (middle + margin)
             offset = nose_x_scale - middle
             command = Action.LOOK_RIGHT
-            print("GO TO RIGHT")
+#            print("GO TO RIGHT")
         elif nose_x_scale < middle - margin:
 #            offset = (middle - margin) - nose_x_scale
             offset = middle  - nose_x_scale
             command = Action.LOOK_LEFT
-            print("GO TO LEFT")
+#            print("GO TO LEFT")
         else:
             offset = 0
         
         if offset != 0:
-            print("OFFSET X" , offset)
+#            print("OFFSET X" , offset)
             value = (((offset+1)**11)-1)
             self.droneController.perform_action(command, value)
     
 
         
         
-        print("NOSE SCALE Y", nose_y_scale)
-        middle = 0.5 # <.5 so see more body
-        margin = 0.05
+#        print("NOSE SCALE Y", nose_y_scale)
+        middle = 0.35 # <.5 so see more body
+        margin = 0.075
         
         command = Action.NOTHING
         if nose_y_scale > middle + margin:
 #            offset = nose_y_scale - (middle + margin)
             offset = nose_y_scale - middle
             command = Action.LOOK_DOWN
-            print("GO TO DOWN")
+#            print("GO TO DOWN")
         elif nose_y_scale < middle - margin:
 #            offset = (middle - margin) - nose_y_scale
             offset = middle - nose_y_scale
             command = Action.LOOK_UP
-            print("GO TO UP")
+#            print("GO TO UP")
         else:
             offset = 0
         
         if offset != 0:
-            print("OFFSET Y" , offset)
+#            print("OFFSET Y" , offset)
             value = (((offset+1)**9)-1)
             self.droneController.perform_action(command, value)
             
@@ -306,7 +306,7 @@ class GestureRecognition:
         idx = (np.abs(self.pose_estimators_ratios - ratio)).argmin()
         
         
-        print("Ratio {} -> {} ({})".format(ratio, self.pose_estimators_ratios[idx], idx))
+#        print("Ratio {} -> {} ({})".format(ratio, self.pose_estimators_ratios[idx], idx))
         
         return self.pose_estimators[idx]
     
@@ -327,7 +327,7 @@ class GestureRecognition:
             print("Could not find skeleton(s)")
             return (-1, -1, -1, -1)
         
-        print("\n\nskeletons printen")
+#        print("\n\nskeletons printen")
         skeletons_by_ids = self.id_skeletons(image_original, image_drawn, skeletons)
 
         for skeleton, face_id, (face_top, face_bottom, face_left, face_right), _ in skeletons_by_ids:
@@ -344,7 +344,15 @@ class GestureRecognition:
                 
                 self.lstm_gesture_recognition.append_skeleton(skeleton)
                 label = self.lstm_gesture_recognition.predict()
-                print('==========',label,'==========')
+                
+                if label == 0:
+                    print("Waving left hand")
+                elif label == 1:
+                    print("Waving right hand")
+                elif label == 2:
+                    print("Clapping")
+                else:
+                    print("Other action")
                 
 #                plt.imshow(image_drawn)
 #                plt.show()

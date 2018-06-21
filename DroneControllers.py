@@ -8,17 +8,18 @@ class DroneController:
         print('Controller')
         self.bebop = bebop
        
-    def perform_action(self, command, command_value):
+    def perform_action(self, command, command_value=None):
         if command != -1 and command != Action.NOTHING:
             print(command)
             self.command_to_action(command, command_value)
         
-    def command_to_action(self, cmd, value):
+    def command_to_action(self, cmd, value=None):
 
         # Camera stuff        
         if cmd == Action.LOOK_UP:
             if value is None:
                 self.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=+16, duration=1)
+                print("woohoo")
             else:
                 self.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=+value, duration=1)
             return
