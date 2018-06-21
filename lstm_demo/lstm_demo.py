@@ -2,16 +2,20 @@ import tensorflow as tf
 from tensorflow.contrib import rnn
 import get_dummy_set as dd
 import random
+import get_training_data as td
 
 #import mnist dataset
 #from tensorflow.examples.tutorials.mnist import input_data
 tf.reset_default_graph()
 #mnist=input_data.read_data_sets("/tmp/data/",one_hot=True)
 
-ordered_dataset_x, ordered_dataset_y = dd.get_small_dataset_data()
+crop_size = 33
 
-crop_size = 5
-ordered_dataset_x_cropped, ordered_dataset_y_cropped = dd.crop_videos(ordered_dataset_x, ordered_dataset_y, crop_size)
+#ordered_dataset_x, ordered_dataset_y = dd.get_small_dataset_data()
+ordered_dataset_x_cropped, ordered_dataset_y_cropped = td.get_training_set("../video_angles", crop_size)
+
+#ordered_dataset_x_cropped, ordered_dataset_y_cropped = dd.crop_videos(ordered_dataset_x, ordered_dataset_y, crop_size)
+
 _, num_frames, num_joints = ordered_dataset_x_cropped.shape
 num_videos, num_classes = ordered_dataset_y_cropped.shape
 
