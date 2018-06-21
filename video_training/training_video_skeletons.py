@@ -13,6 +13,25 @@ def get_angle(p1, p2, p3, side):
     else:
         return math.sin(radians)
 
+def get_angles(skeleton):
+    if all(part in skeleton.body_parts for part in [1, 2, 3, 4, 5, 6, 7]):
+                    
+        neck = skeleton.body_parts[1]
+        rshoulder = skeleton.body_parts[2]
+        relbow = skeleton.body_parts[3]
+        rwrist = skeleton.body_parts[4]
+        lshoulder = skeleton.body_parts[5]
+        lelbow = skeleton.body_parts[6]
+        lwrist = skeleton.body_parts[7]
+        
+        angle_lelbow = get_angle(lwrist, lelbow, lshoulder, "left")
+        angle_relbow = get_angle(rwrist, relbow, rshoulder, "right")
+        angle_lshoulder = get_angle(lelbow, lshoulder, neck, "left")
+        angle_rshoulder = get_angle(relbow, rshoulder, neck, "right")
+    
+        return [angle_relbow, angle_rshoulder, angle_lshoulder, angle_lelbow]
+    return None
+
 def get_angles_video(poseEstimator, category, video_name):
     if not video_name.endswith(".avi"):
         video_name = video_name + ".avi"
@@ -36,26 +55,13 @@ def get_angles_video(poseEstimator, category, video_name):
 #            frame = cv2.flip(frame, 1 )
             skeletons = poseEstimator.inference(frame, upsample_size=4.0)
             if len(skeletons) > 0:
-                correct_skeleton = skeletons[0]
-                if all(part in correct_skeleton.body_parts for part in [1, 2, 3, 4, 5, 6, 7]):
-                    
-                    neck = correct_skeleton.body_parts[1]
-                    rshoulder = correct_skeleton.body_parts[2]
-                    relbow = correct_skeleton.body_parts[3]
-                    rwrist = correct_skeleton.body_parts[4]
-                    lshoulder = correct_skeleton.body_parts[5]
-                    lelbow = correct_skeleton.body_parts[6]
-                    lwrist = correct_skeleton.body_parts[7]
-                    
-                    angle_lelbow = get_angle(lwrist, lelbow, lshoulder, "left")
-                    angle_relbow = get_angle(rwrist, relbow, rshoulder, "right")
-                    angle_lshoulder = get_angle(lelbow, lshoulder, neck, "left")
-                    angle_rshoulder = get_angle(relbow, rshoulder, neck, "right")
+                angles_data = get_angles(skeletons[0])
+                if angles_data is not None:
                     
                     image_drawn = TfPoseEstimator.draw_humans(frame, skeletons, imgcopy=False)
                     image_drawn = cv2.resize(image_drawn, (0,0), fx=0.5, fy=0.5)
                     
-                    angles = np.array([angle_relbow, angle_rshoulder, angle_lshoulder, angle_lelbow])
+                    angles = np.array(angles_data)
                     if correct_frames == 0:
                         angles_matrix[0] = angles
                     else:

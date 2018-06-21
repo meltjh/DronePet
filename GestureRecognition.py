@@ -5,7 +5,13 @@ from Actions import Action
 from enum import Enum
 import numpy as np
 import matplotlib.pyplot as plt
-import copy
+from collections import deque
+import tensorflow as tf
+import math
+
+
+
+
 
 class Bodyparts(Enum):
     Nose = 0
@@ -27,7 +33,64 @@ class Bodyparts(Enum):
     REar = 16
     LEar = 17
     Background = 18
+   
+class LSTMGestureRecognition:
+    def __init__(self):
+        
+        self.sess = tf.Session()
+        loader = tf.train.import_meta_graph("./lstm_model/model.meta")
+        loader.restore(self.sess, tf.train.latest_checkpoint("./lstm_model"))
+          
+        graph = tf.get_default_graph()
+        self.x = graph.get_tensor_by_name("x:0")
+        self.y = graph.get_tensor_by_name("y:0")
+        self.bias = graph.get_tensor_by_name("out_bias:0")
+        self.temp_prediction = graph.get_tensor_by_name("temp_prediction:0")
+        
+        
+        video_length = 5
+        amount_of_joints = 4
+        self.frames_queue = deque([[0]*amount_of_joints]*video_length, video_length)
+        
+    def predict(self):      
+        feed_dict ={self.x:[self.frames_queue]}      
+        prediction = self.temp_prediction + self.bias
+        
+        label = self.sess.run(tf.argmax(prediction, 1), feed_dict)
+        
+        return label
     
+    def append_skeleton(self, skeleton):
+        frame = self.get_angles(skeleton)
+        if frame is not None:
+            self.frames_queue.appendleft(frame)
+         
+    def get_angle(self, p1, p2, p3, side):
+        radians = math.atan2(p3.y - p2.y, p3.x - p2.x) - math.atan2(p1.y - p2.y, p1.x - p2.x)
+        if side == 'left':
+            return -math.sin(radians)
+        else:
+            return math.sin(radians)
+    
+    def get_angles(self, skeleton):
+        if all(part in skeleton.body_parts for part in [1, 2, 3, 4, 5, 6, 7]):
+                        
+            neck = skeleton.body_parts[1]
+            rshoulder = skeleton.body_parts[2]
+            relbow = skeleton.body_parts[3]
+            rwrist = skeleton.body_parts[4]
+            lshoulder = skeleton.body_parts[5]
+            lelbow = skeleton.body_parts[6]
+            lwrist = skeleton.body_parts[7]
+            
+            angle_lelbow = self.get_angle(lwrist, lelbow, lshoulder, "left")
+            angle_relbow = self.get_angle(rwrist, relbow, rshoulder, "right")
+            angle_lshoulder = self.get_angle(lelbow, lshoulder, neck, "left")
+            angle_rshoulder = self.get_angle(relbow, rshoulder, neck, "right")
+        
+            return [angle_relbow, angle_rshoulder, angle_lshoulder, angle_lelbow]
+        return None
+        
 class GestureRecognition:
     
     def __init__(self, faceRecognition, droneController):
@@ -46,6 +109,8 @@ class GestureRecognition:
         # Face recognition is used in id_skeleton
         self.faceRecognition = faceRecognition
         self.droneController = droneController
+        
+        self.lstm_gesture_recognition = LSTMGestureRecognition()
             
             
     def relative_to_absolute_pos(self, patch_shape, patch_margins, pos):
@@ -244,8 +309,6 @@ class GestureRecognition:
         print("Ratio {} -> {} ({})".format(ratio, self.pose_estimators_ratios[idx], idx))
         
         return self.pose_estimators[idx]
-            
-    
     
     # Draws the skeleton and returns the exact relative face position of the given id, or if None, the first face.
     def main(self, image_original, image_drawn, specific_face_id = None, patch_margins = (0,0,0,0)):
@@ -278,8 +341,13 @@ class GestureRecognition:
                 # The first one will be the best one since it is sorted by confidence
                 image_drawn = tf_pose_est.draw_humans(image_drawn, [skeleton], imgcopy=False)
                 
-                plt.imshow(image_drawn)
-                plt.show()
+                
+                self.lstm_gesture_recognition.append_skeleton(skeleton)
+                label = self.lstm_gesture_recognition.predict()
+                print('==========',label,'==========')
+                
+#                plt.imshow(image_drawn)
+#                plt.show()
                 
                 return (face_top, face_bottom, face_left, face_right)
                 
