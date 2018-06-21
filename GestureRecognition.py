@@ -3,6 +3,9 @@ from tf_pose.estimator import TfPoseEstimator
 from tf_pose.networks import get_graph_path
 from Actions import Action
 from enum import Enum
+import numpy as np
+import matplotlib.pyplot as plt
+import copy
 
 class Bodyparts(Enum):
     Nose = 0
@@ -29,20 +32,26 @@ class GestureRecognition:
     
     def __init__(self, faceRecognition, droneController):
         
-        # Detection parameters
-        self.h = 352 #640
-        self.w = 352 #480
-        # Load the trained mode
-        self.poseEstimator = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(self.h,self.w))
+    
+        # Load the trained model for different ratios
+        scales = [(22,60),(22,50),(22,40),(22,30),(22,22)]
+        self.pose_estimators = []
+        self.pose_estimators_ratios = []
+        for h, w in scales:
+            ratio = w/h
+            self.pose_estimators_ratios.append(ratio)
+            self.pose_estimators.append(TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(h*16, w*16)))
+        self.pose_estimators_ratios = np.asarray(self.pose_estimators_ratios)
     
         # Face recognition is used in id_skeleton
         self.faceRecognition = faceRecognition
         self.droneController = droneController
             
             
-            
-    def determine_camera_movements(self, skeleton, patch_shape, patch_margins):
-
+    def relative_to_absolute_pos(self, patch_shape, patch_margins, pos):
+        x = pos.x
+        y = pos.y
+        
         [margin_top, margin_bottom, margin_left, margin_right] =  patch_margins   
         # If there was some margin, calculate the relative positions and update the skeleton.
         if max(margin_top, margin_bottom, margin_left, margin_right) > 0:
@@ -53,13 +62,12 @@ class GestureRecognition:
             full_w = margin_left + patch_w + margin_right
             full_h = margin_top + patch_h + margin_bottom
         
-            for i in skeleton.body_parts.keys():
-                skeleton.body_parts[i].x =  (skeleton.body_parts[i].x*patch_w+offset_x)/full_w
-                skeleton.body_parts[i].y =  (skeleton.body_parts[i].y*patch_h+offset_y)/full_h
+            return (x*patch_w+offset_x)/full_w, (y*patch_h+offset_y)/full_h
+            
+        return x, y
         
-        nose = skeleton.body_parts[0]
-        
-        nose_x_scale = nose.x
+    def determine_camera_movements(self, skeleton, patch_shape, patch_margins):
+        nose_x_scale, nose_y_scale = self.relative_to_absolute_pos(patch_shape, patch_margins, skeleton.body_parts[0])
         
         
         print("NOSE SCALE X", nose_x_scale)
@@ -85,9 +93,7 @@ class GestureRecognition:
             value = (((offset+1)**11)-1)
             self.droneController.perform_action(command, value)
     
-    
-    
-        nose_y_scale = nose.y
+
         
         
         print("NOSE SCALE Y", nose_y_scale)
@@ -229,6 +235,18 @@ class GestureRecognition:
         return skeletons_by_ids
     
     
+
+    def get_correct_pose_estimator(self, w, h):
+        ratio = w/h
+        idx = (np.abs(self.pose_estimators_ratios - ratio)).argmin()
+        
+        
+        print("Ratio {} -> {} ({})".format(ratio, self.pose_estimators_ratios[idx], idx))
+        
+        return self.pose_estimators[idx]
+            
+    
+    
     # Draws the skeleton and returns the exact relative face position of the given id, or if None, the first face.
     def main(self, image_original, image_drawn, specific_face_id = None, patch_margins = (0,0,0,0)):
         if image_original is None:
@@ -236,8 +254,11 @@ class GestureRecognition:
             return (-1, -1, -1, -1)
         
         # Obtain the skeletons
-        image_original_bgr = cv2.cvtColor(image_original[:,:,:], cv2.COLOR_RGB2BGR)
-        skeletons = self.poseEstimator.inference(image_original_bgr, upsample_size=4.0)
+        image_original_bgr = cv2.cvtColor(image_original, cv2.COLOR_RGB2BGR)
+        
+        img_h, img_w, _ = image_original_bgr.shape
+        tf_pose_est = self.get_correct_pose_estimator(img_w, img_h)
+        skeletons = tf_pose_est.inference(image_original_bgr, upsample_size=4.0)
         
         if len(skeletons) <= 0:
             print("Could not find skeleton(s)")
@@ -249,14 +270,16 @@ class GestureRecognition:
         for skeleton, face_id, (face_top, face_bottom, face_left, face_right), _ in skeletons_by_ids:
             if specific_face_id is None or face_id == specific_face_id:
                 name = self.faceRecognition.id_to_name(specific_face_id)
-                correct_skeleton = skeleton
                 
                 image_drawn = self.faceRecognition.draw_box(image_drawn, (face_top, face_bottom, face_left, face_right), "skeleton_id "+name, box_color = (100, 100, 100))
                 
-                self.determine_camera_movements(correct_skeleton, image_original.shape, patch_margins)
+                self.determine_camera_movements(skeleton, image_original.shape, patch_margins)
                 
                 # The first one will be the best one since it is sorted by confidence
-                image_drawn = TfPoseEstimator.draw_humans(image_drawn, [correct_skeleton], imgcopy=False)
+                image_drawn = tf_pose_est.draw_humans(image_drawn, [skeleton], imgcopy=False)
+                
+                plt.imshow(image_drawn)
+                plt.show()
                 
                 return (face_top, face_bottom, face_left, face_right)
                 
