@@ -23,13 +23,14 @@ class OfflineDroneVisionGUI:
     
     def __init__(self, bebop, is_bebop, user_args):
         print("OfflineDroneVisionGUI")
-#        self.cap = cv2.VideoCapture(0)
-        img = cv2.imread("face_recognition_data/faces.jpg")
-        img = cv2.resize(img, (1280, 720))
+        self.cap = cv2.VideoCapture(0)
+#        img = cv2.imread("face_recognition_data/faces.jpg")
+#        img = cv2.resize(img, (1280, 720))
 #        img = cv2.resize(img, (640, 480))
-        self.img = img
+#        self.img = img
         
     def get_latest_valid_picture(self):
         print("get_latest_valid_picture")
-#        _, img = self.cap.read()
-        return self.img
+        _, img = self.cap.read()
+#        img = self.img
+        return img

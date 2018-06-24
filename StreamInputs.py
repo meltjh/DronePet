@@ -56,7 +56,7 @@ class StreamInput:
                     
                     if self.train_only:
                         self.streamOutput.update_stream(image_drawn)
-                        sys.exit("Done testing")
+#                        sys.exit("Done testing")
                         return
                         
                 
