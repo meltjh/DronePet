@@ -20,8 +20,17 @@ class FaceRecognition:
         # Set the font style
         self.font = cv2.FONT_HERSHEY_SIMPLEX
         
+        self.scaleFactor = 1.3
+        self.minNeighbors = 2
+        # high res
+        self.minSize = (88,88)
+        self.maxSize = (320, 320)
+        # low res
+        # self.minSize = (50,50)
+        # self.maxSize = (200, 200)
+        
         # Detection parameters
-        self.confidenceThreshold =  -1000#0.4
+        self.confidenceThreshold =  0#0.4
         self.train_count = -1
     
       
@@ -38,23 +47,8 @@ class FaceRecognition:
     def store_training_faces(self, image, face_id, display_faces = False, image_drawn = None):
         image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         
-        # Detect frames of different sizes, list of faces rectangles
-#        faces = self.faceCascade.detectMultiScale(image_gray, 1.3, 5) # TODO: welke waardes etc
-        
-        # high resoltution
-        sf = 1.30
-        mn = 2
-        mis = (88, 88)
-        mas = (320, 320)
-        
-        # low resolution
-#        sf = 1.30
-#        mn = 2
-#        mis = (50, 50)
-#        mas = (200, 200)
-        
 #        start = timeit.default_timer()
-        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
+        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=self.scaleFactor, minNeighbors=self.minNeighbors, minSize=self.minSize, maxSize=self.maxSize)
 #        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
 #        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
 #        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
@@ -108,7 +102,7 @@ class FaceRecognition:
         image_gray = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
     
         # Get all face from the video frame
-        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=1.2, minNeighbors=5) # TODO: waardes vinden
+        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=self.scaleFactor, minNeighbors=self.minNeighbors, minSize=self.minSize, maxSize=self.maxSize)
     
         faces_confident = []
         # For each face in faces
@@ -201,5 +195,6 @@ class FaceRecognition:
         
         # Determine the body patch corners
         estimate_body_corners = self.get_body_patch(image_original, correct_face_corners)
+        image_drawn = self.draw_box(image_drawn, estimate_body_corners, "Posture estimation focus", box_color = (0, 0, 0))
         
         return estimate_body_corners, correct_face_corners

@@ -189,7 +189,7 @@ class DroneVisionGUI:
         :param buffer_size: number of frames to buffer in memory.  Defaults to 10.
         :param network_caching: buffering time in milli-seconds, 200 should be enough, 150 works on some devices
         """
-        self.fps = 2
+        self.fps = 20
         self.buffer_size = buffer_size
         self.drone_object = drone_object
         self.is_bebop = is_bebop

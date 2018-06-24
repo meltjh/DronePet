@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from collections import deque
 import tensorflow as tf
 import math
-
+import timeit
 
 
 
@@ -97,10 +97,10 @@ class GestureRecognition:
         
     
         # Load the trained model for different ratios
-        scales = []#[(27,23)]#[(60,23),(50,23),(40,23),(30,23),(23,23)]
+        self.scales = [(11,10), (10,10),(11,9)]#[(30,23)]#[(27,23)]#[(60,23),(50,23),(40,23),(30,23),(23,23)]
         self.pose_estimators = []
         self.pose_estimators_ratios = []
-        for w, h in scales:
+        for w, h in self.scales:
             ratio = w/h
             self.pose_estimators_ratios.append(ratio)
             self.pose_estimators.append(TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(w*16, h*16)))
@@ -306,17 +306,18 @@ class GestureRecognition:
         idx = (np.abs(self.pose_estimators_ratios - ratio)).argmin()
         
         
-#        print("Ratio {} -> {} ({})".format(ratio, self.pose_estimators_ratios[idx], idx))
+        print("Ratio {} -> {} ({})".format(ratio, self.pose_estimators_ratios[idx], idx))
         
         return self.pose_estimators[idx]
     
-    def get_corresponding_skeleton(self, skeletons, face_position):
+    def get_corresponding_skeleton(self, skeletons, face_position, img_h, img_w):
         (top, bottom, left, right) = face_position
         
         for skeleton in skeletons:
-            nose = skeleton.body_parts[0]
-            if left < nose.x and right > nose.x and top < nose.y and bottom > nose.y:
-                return skeleton
+            if 0 in skeleton.body_parts:
+                nose = skeleton.body_parts[0]
+                if left < nose.x*img_w and right > nose.x*img_w and top < nose.y*img_h and bottom > nose.y*img_h:
+                    return skeleton
         
         return None
     
@@ -327,38 +328,54 @@ class GestureRecognition:
             return False
         
         # Obtain the skeletons
+        
         image_original_bgr = cv2.cvtColor(image_original, cv2.COLOR_RGB2BGR)
+        
+        
         
         img_h, img_w, _ = image_original_bgr.shape
         tf_pose_est = self.get_correct_pose_estimator(img_w, img_h)
+        
+        # Downscale the image beforehand will increase the execution time, slightly.
+        image_original_bgr = cv2.resize(image_original_bgr, (self.scales[0][0]*16, self.scales[0][1]*16))
+        
         skeletons = tf_pose_est.inference(image_original_bgr, upsample_size=4.0)
         
-        if len(skeletons) <= 0:
-            print("Could not find skeleton(s)")
-            return False
         
-        correct_skeleton = self.get_corresponding_skeleton(skeletons, face_position)
+        # TEMP
+#        image_original_bgr = tf_pose_est.draw_humans(image_original_bgr, skeletons, imgcopy=False)
+#        print("shape image_drawn", image_original_bgr.shape)
+#        plt.imshow(image_original_bgr)
+#        plt.show()
+        
+
+
+        margin_top, margin_bottom, margin_left, margin_right = patch_margins
+        face_top, face_bottom, face_left, face_right = face_position
+        face_position = (face_top-margin_top, face_bottom-margin_top, face_left-margin_left, face_right-margin_left)
+        correct_skeleton = self.get_corresponding_skeleton(skeletons, face_position, img_h, img_w)
 
         if correct_skeleton is None:
             print("No skeleton in the face position found")
             return False
-
+        
+        print("Hi")
+#
         self.determine_camera_movements(correct_skeleton, image_original.shape, patch_margins)
-        
-        # The first one will be the best one since it is sorted by confidence
+#        
         image_drawn = tf_pose_est.draw_humans(image_drawn, [correct_skeleton], imgcopy=False)
-        
-        
-        self.lstm_gesture_recognition.append_skeleton(correct_skeleton)
-        label = self.lstm_gesture_recognition.predict()
-        
-        if label == 0:
-            print("Waving left hand")
-        elif label == 1:
-            print("Waving right hand")
-        elif label == 2:
-            print("Clapping")
-        else:
-            print("Other action")
+#        
+#        
+#        self.lstm_gesture_recognition.append_skeleton(correct_skeleton)
+#        label = self.lstm_gesture_recognition.predict()
+#        
+#        if label == 0:
+#            print("Waving left hand")
+#        elif label == 1:
+#            print("Waving right hand")
+#        elif label == 2:
+#            print("Clapping")
+#        else:
+#            print("Other action")
 
         return True
