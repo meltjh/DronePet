@@ -97,7 +97,7 @@ class GestureRecognition:
         
     
         # Load the trained model for different ratios
-        self.scales = [(11,10), (10,10),(11,9)]#[(30,23)]#[(27,23)]#[(60,23),(50,23),(40,23),(30,23),(23,23)]
+        self.scales = [(11,9)]#[(12,8), (11,9), (11,10), (10,10)]
         self.pose_estimators = []
         self.pose_estimators_ratios = []
         for w, h in self.scales:
@@ -162,7 +162,7 @@ class GestureRecognition:
         
         
 #        print("NOSE SCALE Y", nose_y_scale)
-        middle = 0.35 # <.5 so see more body
+        middle = 0.4 # <.5 so see more body
         margin = 0.075
         
         command = Action.NOTHING
@@ -184,120 +184,6 @@ class GestureRecognition:
             value = (((offset+1)**9)-1)
             self.droneController.perform_action(command, value)
             
-#    # Given the eyes, nose and if possible the ears, estimate the face patch
-#    # which can then be fed to face recognition to determine the id of the skeleton.
-#    # Returns the (top, bottom, left, right) pixel values of the patch.
-#    # (-1, -1, -1, -1) if no patch found.
-#    def get_face_patch(self, image, skeleton):
-#        # If no nose and eyes found, continue.
-#        if not (0 in skeleton.body_parts and
-#                14 in skeleton.body_parts and
-#                15 in skeleton.body_parts):
-#            
-#            print('No eyes and nose found')
-#            return (-1, -1, -1, -1)
-#        
-#        
-#        [image_h, image_w, _] = image.shape
-#        
-#        nose = skeleton.body_parts[0]
-#        eye_r = skeleton.body_parts[15] # l and r switched to relative to camera
-#        eye_l = skeleton.body_parts[14] # l and r switched to relative to camera
-#        
-#        cv2.circle(image, (int(round(image_w*eye_r.x)), int(round(image_h*eye_r.y))), 3, (0,0,255), thickness=3, lineType=8, shift=0)
-#        cv2.circle(image, (int(round(image_w*eye_l.x)), int(round(image_h*eye_l.y))), 3, (0,0,255), thickness=3, lineType=8, shift=0)
-#        cv2.circle(image, (int(round(image_w*nose.x)), int(round(image_h*nose.y))), 3, (0,0,255), thickness=3, lineType=8, shift=0)
-#
-#
-#        best_right = eye_r.x + (eye_r.x - nose.x)
-#        if 17 in skeleton.body_parts:
-#            ear_r = skeleton.body_parts[17] # l and r switched to relative to camera
-#            
-#            cv2.circle(image, (int(round(image_w*ear_r.x)), int(round(image_h*ear_r.y))), 3, (0,0,255), thickness=3, lineType=8, shift=0)
-#            
-#            
-#            best_right = ear_r.x
-#        
-#        best_left = eye_l.x - (nose.x - eye_l.x)
-#        if 16 in skeleton.body_parts:
-#            ear_l = skeleton.body_parts[16] # l and r switched to relative to camera
-#            
-#            cv2.circle(image, (int(round(image_w*ear_l.x)), int(round(image_h*ear_l.y))), 3, (0,0,255), thickness=3, lineType=8, shift=0)
-#                 
-#            best_left = ear_l.x
-#        
-#        face_width = best_right - best_left
-#        
-#        # Crop the head, and add a little bit the difference between eyes and nose.
-#        # When this increases, the face is in front of the camera, so the head seems biggest.
-#        # When the head is seen from above or below, the head is smaller, and so is the difference between the eyes and the nose.
-#        avg_eyes = (eye_r.y + eye_l.y) / 2
-#        nose_eyes_difference = nose.y - avg_eyes
-#        face_height = face_width*2 + nose_eyes_difference
-#        
-#        left = best_left
-#        top = nose.y - (face_height / 2) * 1.2
-#        right = best_right
-#        bottom = nose.y + (face_height / 2)
-#        
-#        
-#        
-#        
-#        # Round and normalize to the actual image pixels
-#        left_inner = int(round(left*image_w))
-#        top_inner = int(round(top*image_h))
-#        right_inner = int(round(right*image_w))
-#        bottom_inner = int(round(bottom*image_h))
-#        
-#        self.faceRecognition.draw_box(image, (top_inner, bottom_inner, left_inner, right_inner), title = 'Face inner', box_color = (255, 255, 255))
-#
-#
-#        width = right-left
-#        height = bottom - top
-#
-#        FACE_MARGIN_WIDTH = 0.5
-#        FACE_MARGIN_HEIGHT = 0.4
-#        # Add some margin:
-#        left = left - FACE_MARGIN_WIDTH * width
-#        top = top - FACE_MARGIN_HEIGHT * height 
-#        right = right + FACE_MARGIN_WIDTH * width
-#        bottom = bottom + FACE_MARGIN_HEIGHT * height
-#        
-#
-#        # Round and normalize to the actual image pixels
-#        left = int(round(left*image_w))
-#        top = int(round(top*image_h))
-#        right = int(round(right*image_w))
-#        bottom = int(round(bottom*image_h))
-#        
-#        left = max(0, left)
-#        top = max(0, top)
-#        right = min(image_w, right)
-#        bottom = min(image_h, bottom)
-#        
-#        self.faceRecognition.draw_box(image, (top, bottom, left, right), title = 'Face margin', box_color = (255, 255, 255))
-#        
-#        return top, bottom, left, right
-#
-#    def id_skeletons(self, image_original, image_drawn, skeletons):
-#        skeletons_by_ids = []
-#        for skeleton in skeletons: 
-#            top, bottom, left, right = self.get_face_patch(image_drawn, skeleton)
-#            
-#            # Obtain the patch
-#            image_patch = image_original[top:bottom, left:right, :]
-#
-#            # Recogize faces
-#            faces = self.faceRecognition.recognize_faces(image_patch)
-#            for face_id, (s_top, s_bottom, s_left, s_right), confidence in faces:
-#                # Add offset
-#                corners = (s_top + top, s_bottom + top, s_left + left, s_right + left)
-#                skeletons_by_ids.append((skeleton, face_id, corners, confidence))
-#                
-#        # Sort faces so that the most confident are in front of the list.
-#        skeletons_by_ids.sort(key=lambda x: x[3], reverse = True)
-#
-#        return skeletons_by_ids
     
     
 
@@ -340,14 +226,6 @@ class GestureRecognition:
         image_original_bgr = cv2.resize(image_original_bgr, (self.scales[0][0]*16, self.scales[0][1]*16))
         
         skeletons = tf_pose_est.inference(image_original_bgr, upsample_size=4.0)
-        
-        
-        # TEMP
-#        image_original_bgr = tf_pose_est.draw_humans(image_original_bgr, skeletons, imgcopy=False)
-#        print("shape image_drawn", image_original_bgr.shape)
-#        plt.imshow(image_original_bgr)
-#        plt.show()
-        
 
 
         margin_top, margin_bottom, margin_left, margin_right = patch_margins
@@ -358,24 +236,22 @@ class GestureRecognition:
         if correct_skeleton is None:
             print("No skeleton in the face position found")
             return False
-        
-        print("Hi")
-#
+
         self.determine_camera_movements(correct_skeleton, image_original.shape, patch_margins)
-#        
+        
         image_drawn = tf_pose_est.draw_humans(image_drawn, [correct_skeleton], imgcopy=False)
-#        
-#        
-#        self.lstm_gesture_recognition.append_skeleton(correct_skeleton)
-#        label = self.lstm_gesture_recognition.predict()
-#        
-#        if label == 0:
-#            print("Waving left hand")
-#        elif label == 1:
-#            print("Waving right hand")
-#        elif label == 2:
-#            print("Clapping")
-#        else:
-#            print("Other action")
+        
+        
+        self.lstm_gesture_recognition.append_skeleton(correct_skeleton)
+        label = self.lstm_gesture_recognition.predict()
+        
+        if label == 0:
+            print("Waving left hand")
+        elif label == 1:
+            print("Waving right hand")
+        elif label == 2:
+            print("Clapping")
+        else:
+            print("Other action")
 
         return True
