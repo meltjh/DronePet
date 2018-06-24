@@ -14,7 +14,7 @@ from StreamInputs import StreamInput
 from Offline import OfflineDroneController, OfflineBebop, OfflineDroneVisionGUI
 
 
-ONLINE = True
+ONLINE = False
         
 def online():
     bebop = Bebop()

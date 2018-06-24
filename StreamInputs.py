@@ -6,14 +6,12 @@ from GestureRecognition import GestureRecognition
 from Actions import Action
 import traceback
 from enum import Enum
+import sys
 
 class Training(Enum):
     NoTraining = 0
     IdTraining = 1
     AllTraining = 2
-
-
-
     
 class StreamInput:
     communication = None
@@ -31,8 +29,9 @@ class StreamInput:
         self.streamOutput = streamOutput
         
         # If true, save the patches of the face found by the id
-        self.face_id = 0 # TODO, overal nu richard ipv de naam van de persoon oid??
-        self.training = Training.NoTraining
+        self.face_id = 0
+        self.training = Training.AllTraining
+        self.train_only = True # Only do face recognition
         
     def processing_stream(self, args):
         print('processing_stream')
@@ -53,39 +52,44 @@ class StreamInput:
                 
                 
                 if self.training == Training.AllTraining:
-                    self.faceRecognition.store_training_faces(image_original, self.face_id)
-                    return
+                    self.faceRecognition.store_training_faces(image_original, self.face_id, True, image_drawn)                    
+                    
+                    if self.train_only:
+                        self.streamOutput.update_stream(image_drawn)
+                        sys.exit("Done testing")
+                        return
                         
                 
                 # Detect the most confident face given the face_id
                 # Show all faces and get the location in which the human should be.
-                (top, bottom, left, right) = self.faceRecognition.main(image_original, image_drawn, self.face_id)
-                
+                (body_top, body_bottom, body_left, body_right), (face_top, face_bottom, face_left, face_right) = self.faceRecognition.main(image_original, image_drawn, self.face_id)
 
-                if max(left, top, right, bottom) < 0:
+                if max(body_top, body_bottom, body_left, body_right) < 0:
                     print('No patch found by face_recognition')
                     self.streamOutput.update_stream(image_drawn)
                     return
-
-                # Crop the images to feed to the skeleton recognition
-                image_original_patch = image_original[top:bottom, left:right, :]
-                image_drawn_patch = image_drawn[top:bottom, left:right, :]
-
-                # Skeleton recognition
-                patch_margins = (top, image_h-bottom, left, image_w-right)
-                face_top, face_bottom, face_left, face_right = self.gestureRecognition.main(image_original=image_original_patch, image_drawn=image_drawn_patch, specific_face_id=self.face_id, patch_margins=patch_margins)
                 
-                # Combine the patch with the full image
-                image_drawn[top:bottom, left:right, :] = image_drawn_patch
-                self.streamOutput.update_stream(image_drawn)
-                
-            
                 # Save the face patch that was found by gestureRecognition
                 if self.training == Training.IdTraining:
-                    if image_original_patch is not None and min(face_left, face_top, face_right, face_bottom) >= 0:
-                        image_patch_face = image_original_patch[face_top:face_bottom, face_left:face_right, :]
-                        self.faceRecognition.store_training_face(image_patch_face, self.face_id)
+                    image_patch_face = image_original[face_top:face_bottom, face_left:face_right, :]
+                    self.faceRecognition.store_training_face(image_patch_face, self.face_id)
                     
+                    if self.train_only:
+                        self.streamOutput.update_stream(image_drawn)
+                        return
+
+                # Crop the images to feed to the skeleton recognition
+                image_original_patch = image_original[body_top:body_bottom, body_left:body_right, :]
+                image_drawn_patch = image_drawn[body_top:body_bottom, body_left:body_right, :]
+
+                # Skeleton recognition
+                patch_margins = (body_top, image_h-body_bottom, body_left, image_w-body_right)
+                succes = self.gestureRecognition.main(image_original=image_original_patch, image_drawn=image_drawn_patch, face_position=(face_top, face_bottom, face_left, face_right), specific_face_id=self.face_id, patch_margins=patch_margins)
+                
+                # Combine the patch with the full image
+                image_drawn[body_top:body_bottom, body_left:body_right, :] = image_drawn_patch
+                self.streamOutput.update_stream(image_drawn)
+                
             except Exception as e:
                 print("Error in Processin_stream, type error: " + str(e))
                 print(traceback.format_exc())
