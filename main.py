@@ -30,7 +30,7 @@ def online():
 
 
 
-        droneController = DroneController(bebop)
+        droneController = DroneController(bebop, ONLINE)
         streamOutput = StreamOutput()
 
         stream_input = StreamInput(bebopVision, streamOutput, droneController)
