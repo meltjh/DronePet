@@ -45,6 +45,16 @@ class DroneController:
                 self.bebop.pan_tilt_camera_velocity(pan_velocity=+value, tilt_velocity=0, duration=duration)
             return
 
+
+        if cmd == Action.ALLOW_MOVEMENTS:
+            print("ALLOW_MOVEMENTS")
+            self.allow_movements = True
+            return
+        if cmd == Action.DISALLOW_MOVEMENTS:
+            print("DISALLOW_MOVEMENTS")
+            self.allow_movements = False
+            return
+        
         if self.ONLINE and self.allow_movements:
             # Movement stuff
             if cmd == Action.MOVE_FORWARD:
@@ -111,14 +121,5 @@ class DroneController:
     #            self.bebop.video_resolution_mode("rec720_stream720")
     #            time.sleep(5)
     #            self.bebop.video_resolution_mode("rec1080_stream480")            
-                return
-            
-            if cmd == Action.ALLOW_MOVEMENTS:
-                print("ALLOW_MOVEMENTS")
-                self.allow_movements = True
-                return
-            if cmd == Action.DISALLOW_MOVEMENTS:
-                print("DISALLOW_MOVEMENTS")
-                self.allow_movements = False
                 return
         

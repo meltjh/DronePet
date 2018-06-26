@@ -25,3 +25,5 @@ class Action(Enum):
     MOVE_DOWN = 14
     ROTATE_LEFT = 15
     ROTATE_RIGHT = 16
+    ALLOW_MOVEMENTS = 17
+    DISALLOW_MOVEMENTS = 18
