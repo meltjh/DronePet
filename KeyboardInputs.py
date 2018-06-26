@@ -35,5 +35,7 @@ class KeyboardInput:
             'x': Action.SAVELAND,
             
             'q': Action.ABORT,
+            'start': Action.ALLOW_MOVEMENTS,
+            '`': Action.DISALLOW_MOVEMENTS,
             't': Action.TEST
         }.get(inpt.lower(), Action.NOTHING) # default 

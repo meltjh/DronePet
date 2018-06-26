@@ -9,6 +9,7 @@ class DroneController:
         self.bebop = bebop
         self.bebop.SetMaxRotationSpeed(30)
         self.ONLINE = ONLINE
+        self.allow_movements = False
        
     def perform_action(self, command, command_value=None, duration=1):
         if command != -1 and command != Action.NOTHING:
@@ -44,7 +45,7 @@ class DroneController:
                 self.bebop.pan_tilt_camera_velocity(pan_velocity=+value, tilt_velocity=0, duration=duration)
             return
 
-        if self.ONLINE:
+        if self.ONLINE and self.allow_movements:
             # Movement stuff
             if cmd == Action.MOVE_FORWARD:
                 self.bebop.fly_direct(roll=0, pitch=+50, yaw=0, vertical_movement=0, duration=duration)
@@ -110,5 +111,14 @@ class DroneController:
     #            self.bebop.video_resolution_mode("rec720_stream720")
     #            time.sleep(5)
     #            self.bebop.video_resolution_mode("rec1080_stream480")            
+                return
+            
+            if cmd == Action.ALLOW_MOVEMENTS:
+                print("ALLOW_MOVEMENTS")
+                self.allow_movements = True
+                return
+            if cmd == Action.DISALLOW_MOVEMENTS:
+                print("DISALLOW_MOVEMENTS")
+                self.allow_movements = False
                 return
         
