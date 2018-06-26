@@ -19,8 +19,17 @@ def get_training_set(directory, sub_vid_length):
                 class_num = 0
             elif file_name == "23_waving_flipped.pkl":
                 class_num = 1
-            else:
+            elif file_name == "10_clapping.pkl":
                 class_num = 2
+            elif file_name == "up.pkl":
+                class_num = 3
+            elif file_name == "down.pkl":
+                class_num = 4
+            elif file_name == "half_circle_up.pkl":
+                class_num = 5
+            elif file_name == "half_circledown.pkl":
+                class_num = 6
+                
     
             one_hot_y = np.zeros(num_classes)
             one_hot_y[class_num] = 1

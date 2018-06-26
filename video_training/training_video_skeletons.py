@@ -55,10 +55,11 @@ def get_angles_video(poseEstimator, category, video_name):
 #            frame = cv2.flip(frame, 1 )
             skeletons = poseEstimator.inference(frame, upsample_size=4.0)
             if len(skeletons) > 0:
-                angles_data = get_angles(skeletons[0])
+                first_skeleton = skeletons[0]
+                angles_data = get_angles(first_skeleton)
                 if angles_data is not None:
                     
-                    image_drawn = TfPoseEstimator.draw_humans(frame, skeletons, imgcopy=False)
+                    image_drawn = TfPoseEstimator.draw_humans(frame, [first_skeleton], imgcopy=False)
                     image_drawn = cv2.resize(image_drawn, (0,0), fx=0.5, fy=0.5)
                     
                     angles = np.array(angles_data)
@@ -77,16 +78,17 @@ def get_angles_video(poseEstimator, category, video_name):
      
         # Break the loop
         else:
+            print(correct_frames)
             return angles_matrix
     
     # When everything done, release the video capture object
     cap.release()
 
 if __name__ == "__main__":
-    path_video_angles = "video_angles"
-    category = "10_clapping"
+    path_video_angles = "../video_angles"
+    category = "half_circle_down"
     file_video_angles = "{}.pkl".format(category)
-    full_angles_path = "../{}/{}".format(path_video_angles, file_video_angles)
+    full_angles_path = "{}/{}".format(path_video_angles, file_video_angles)
     
     if not os.path.exists(path_video_angles):
         os.makedirs(path_video_angles)
@@ -125,5 +127,3 @@ if __name__ == "__main__":
         
     # Closes all the frames
     cv2.destroyAllWindows()
-        
-

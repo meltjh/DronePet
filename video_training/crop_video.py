@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 import os
 
 # Create a VideoCapture object and read from input file
-video_name = "S001C001P006R001A023_rgb"
-category = "23_hand_waving"
-cap = cv2.VideoCapture("full_vids/{}/{}.avi".format(category, video_name))
+video_name = "down_2"
+category = "down"
+cap = cv2.VideoCapture("full_vids/{}/{}.mov".format(category, video_name))
 fourcc = cv2.VideoWriter_fourcc(*'jpeg')
 
 # Create directory for cropped videos.
@@ -17,8 +17,14 @@ cropped_vids_directory = "cropped_vids/{}".format(category)
 if not os.path.exists(cropped_vids_directory):
     os.makedirs(cropped_vids_directory)
 
-out = cv2.VideoWriter("{}/short_{}.avi".format(cropped_vids_directory, video_name), fourcc, 30.0, 
-                      (800, 800), True)
+
+cap_dim1 = 800 #800
+cap_dim2 = 720
+
+
+sub_vid = 4
+out = cv2.VideoWriter("{}/short_{}_{}.avi".format(cropped_vids_directory, video_name, sub_vid), fourcc, 30.0, 
+                      (cap_dim1, cap_dim2), True)
  
 # Check if video opened successfully
 if (cap.isOpened() == False):
@@ -29,8 +35,8 @@ cv2.startWindowThread()
 
 i = 0
 num_frames = 0
-begin_frame = 17
-max_frame = 71
+begin_frame = 260
+max_frame = 325
 
 # Read until video is completed
 while(cap.isOpened()):
@@ -38,9 +44,10 @@ while(cap.isOpened()):
     ret, frame = cap.read()
     if ret:
         if i >= begin_frame and i <= max_frame:
-            
             # Crop to get the center of the frame.
-            frame = frame[140:940, 560:1360]
+#            frame = frame[140:940, 560:1360]
+            frame = cv2.flip(frame, 1)
+            frame = frame[0:720, 180:980]
             out.write(frame)
 
             # Resize for displaying.
@@ -48,10 +55,11 @@ while(cap.isOpened()):
             num_frames +=1
 
             # Display the resulting frame
-#            if i == begin_frame: # When looking at the beginning of the video.
-            if i == max_frame  - 1: # When looking at end of video.
+            if i == begin_frame: # When looking at the beginning of the video.
+#            if i == max_frame - 1: # When looking at end of video.
                 plt.imshow(frame)
                 plt.show
+#                break
      
         # Press Q on keyboard to  exit
         if cv2.waitKey(25) & 0xFF == ord('q'):

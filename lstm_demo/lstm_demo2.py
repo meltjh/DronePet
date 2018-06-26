@@ -11,10 +11,10 @@ import os
 tf.reset_default_graph()
 #mnist=input_data.read_data_sets("/tmp/data/",one_hot=True)
 
-crop_size = 22
+max_size = 50
 
 #ordered_dataset_x, ordered_dataset_y = dd.get_small_dataset_data()
-ordered_dataset_x_cropped, ordered_dataset_y_cropped = td.get_training_set("../video_angles", crop_size)
+ordered_dataset_x_cropped, ordered_dataset_y_cropped, ordered_sequence_lengths = td.get_training_set("../video_angles", max_size)
 
 #ordered_dataset_x_cropped, ordered_dataset_y_cropped = dd.crop_videos(ordered_dataset_x, ordered_dataset_y, crop_size)
 
@@ -23,13 +23,13 @@ num_videos, num_classes = ordered_dataset_y_cropped.shape
 
 print(num_videos, num_frames, num_classes, num_joints)
 
-c = list(zip(ordered_dataset_x_cropped, ordered_dataset_y_cropped))
+c = list(zip(ordered_dataset_x_cropped, ordered_dataset_y_cropped, ordered_sequence_lengths))
 random.shuffle(c)
-dataset_x, dataset_y = zip(*c)
+dataset_x, dataset_y, sequence_lengths = zip(*c)
 
 #define constants
 #unrolled through 28 time steps
-time_steps=crop_size
+time_steps=max_size
 #hidden LSTM units
 num_units=128
 #rows of 28 pixels
@@ -51,12 +51,14 @@ x=tf.placeholder("float",[None,time_steps,n_input], name='x')
 #input label placeholder
 y=tf.placeholder("float",[None,n_classes], name='y')
 
+sequence_len_ph = tf.placeholder(tf.int32, [None], name='sequence_len')
+
 #processing the input tensor from [batch_size,n_steps,n_input] to "time_steps" number of [batch_size,n_input] tensors
 input=tf.unstack(x ,time_steps,1)
 
 #defining the network
-lstm_layer=rnn.BasicLSTMCell(num_units,forget_bias=1)
-outputs,_=rnn.static_rnn(lstm_layer,input,dtype="float32")
+lstm_layer = rnn.BasicLSTMCell(num_units,forget_bias=1)
+outputs,_ = rnn.static_rnn(lstm_layer,input, dtype="float32", sequence_length = sequence_len_ph)
 
 saver = tf.train.Saver(save_relative_paths=True)
 
@@ -89,14 +91,16 @@ with tf.Session() as sess:
         while i < runs_per_epoch:
             batch_x = dataset_x[i*batch_size:i*batch_size + batch_size]
             batch_y = dataset_y[i*batch_size:i*batch_size + batch_size]
+            batch_sequence_lengths = sequence_lengths[i*batch_size:i*batch_size + batch_size]
+            print(len(batch_sequence_lengths))
             
-            sess.run(opt, feed_dict={x: batch_x, y: batch_y})
+            sess.run(opt, feed_dict={x: batch_x, y: batch_y, sequence_len_ph:batch_sequence_lengths})
     
             if i %10==0:
                 num_tests += 1
                 acc=sess.run(accuracy, feed_dict={x:batch_x, y:batch_y})
                 sum_accuracy += acc
-                los=sess.run(loss, feed_dict={x:batch_x, y:batch_y})
+                los=sess.run(loss, feed_dict={x:batch_x, y:batch_y, sequence_len_ph:batch_sequence_lengths})
                 sum_loss += los
                 print("For iter ",i)
                 print("Accuracy ",acc)
@@ -113,4 +117,4 @@ with tf.Session() as sess:
 
     # Saving
     cur_path = os.getcwd()
-    saver.save(sess,  "./../lstm_model/model")
+    saver.save(sess,  "./../lstm_model/model_test")
