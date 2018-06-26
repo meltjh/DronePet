@@ -25,6 +25,7 @@ class OfflineDroneVisionGUI:
         print("OfflineDroneVisionGUI")
         self.cap = cv2.VideoCapture(0)
 #        img = cv2.imread("face_recognition_data/faces.jpg")
+#        img = cv2.imread("posture.jpg")
 #        img = cv2.resize(img, (1280, 720))
 #        img = cv2.resize(img, (640, 480))
 #        self.img = img

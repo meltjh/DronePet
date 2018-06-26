@@ -24,14 +24,14 @@ class StreamInput:
         self.droneController = droneController
         self.vision = vision
         
-        self.faceRecognition = FaceRecognition()
+        self.faceRecognition = FaceRecognition(droneController)
         self.gestureRecognition = GestureRecognition(self.faceRecognition, self.droneController)
         self.streamOutput = streamOutput
         
         # If true, save the patches of the face found by the id
         self.face_id = 0
-        self.training = Training.AllTraining
-        self.train_only = True # Only do face recognition
+        self.training = Training.NoTraining
+        self.train_only = False # Only do face recognition
         
     def processing_stream(self, args):
         print('processing_stream')
@@ -56,7 +56,6 @@ class StreamInput:
                     
                     if self.train_only:
                         self.streamOutput.update_stream(image_drawn)
-#                        sys.exit("Done testing")
                         return
                         
                 
@@ -64,6 +63,10 @@ class StreamInput:
                 # Show all faces and get the location in which the human should be.
                 (body_top, body_bottom, body_left, body_right), (face_top, face_bottom, face_left, face_right) = self.faceRecognition.main(image_original, image_drawn, self.face_id)
 
+                self.streamOutput.update_stream(image_drawn)
+                print("\n\n")
+                return
+            
                 if max(body_top, body_bottom, body_left, body_right) < 0:
                     print('No patch found by face_recognition')
                     self.streamOutput.update_stream(image_drawn)
@@ -86,9 +89,13 @@ class StreamInput:
                 patch_margins = (body_top, image_h-body_bottom, body_left, image_w-body_right)
                 succes = self.gestureRecognition.main(image_original=image_original_patch, image_drawn=image_drawn_patch, face_position=(face_top, face_bottom, face_left, face_right), specific_face_id=self.face_id, patch_margins=patch_margins)
                 
+                
+                
                 # Combine the patch with the full image
                 image_drawn[body_top:body_bottom, body_left:body_right, :] = image_drawn_patch
                 self.streamOutput.update_stream(image_drawn)
+                
+#                sys.exit("End of testing")
                 
             except Exception as e:
                 print("Error in Processin_stream, type error: " + str(e))

@@ -21,7 +21,7 @@ def online():
     
 
     # connect to the bebop
-    success = bebop.connect(3)
+    success = bebop.connect(5)
 
     if (success):
         print('success')
