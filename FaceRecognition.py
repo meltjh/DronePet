@@ -2,12 +2,13 @@
 # Original code: http://thecodacus.com/ modified by Nazmi Asri
 
 import os
-import cv2
-import timeit
+import cv2 
+from Actions import Action
+
 
 class FaceRecognition:
     
-    def __init__(self):
+    def __init__(self, drone_controller):
         # Create Local Binary Patterns Histograms for face recognization
         self.recognizer = cv2.face.LBPHFaceRecognizer_create()
         # Load the trained mode
@@ -30,8 +31,10 @@ class FaceRecognition:
         # self.maxSize = (200, 200)
         
         # Detection parameters
-        self.confidenceThreshold =  0#0.4
+        self.confidenceThreshold =  0.25
         self.train_count = -1
+        
+        self.drone_controller = drone_controller
     
       
     def id_to_name(self, face_id):
@@ -47,23 +50,8 @@ class FaceRecognition:
     def store_training_faces(self, image, face_id, display_faces = False, image_drawn = None):
         image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         
-#        start = timeit.default_timer()
         faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=self.scaleFactor, minNeighbors=self.minNeighbors, minSize=self.minSize, maxSize=self.maxSize)
-#        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
-#        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
-#        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
-#        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
-#        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
-#        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
-#        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
-#        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
-#        faces = self.faceCascade.detectMultiScale(image_gray, scaleFactor=sf, minNeighbors=mn, minSize=mis, maxSize=mas)
-#        stop = timeit.default_timer()
-#        print("For 10 times:")
-#        print("sf:{}, mn:{}, mis:{}, mas:{}".format(sf, mn, mis, mas))
-#        print("Amount of faces: {}",format(len(faces)))
-#        print("Took: {} seconds".format(stop - start))
-        
+
         # Loops for each faces
         for (x,y,w,h) in faces:
             if display_faces:
@@ -160,7 +148,50 @@ class FaceRecognition:
         
         return top, bottom, left, right
 
+    def get_ratio_distance(self, x, center_ratio, margin_ratio):
+        if x < center_ratio - margin_ratio or x > center_ratio + margin_ratio:
+            return x - center_ratio
+        return 0
     
+    def get_ratio_degrees(self, x, center_ratio, margin_ratio, max_degree):
+        distance_ratio = self.get_ratio_distance(x, center_ratio, margin_ratio)
+        return distance_ratio * max_degree
+    
+    def perform_action(self, face_corners, image_w, image_h, image_drawn):
+        
+        face_top, face_bottom, face_left, face_right = face_corners
+        
+        center_x = (face_right-face_left)/2 + face_left
+        center_y = (face_bottom-face_top)/2 + face_top
+        
+        # Somehow /2...
+        ratio_x = center_x/image_w/2
+        ratio_y = center_y/image_h/2 
+
+        x_center_ratio = 0.5
+        y_center_ratio = 0.5
+        x_margin_ratio = 0.025
+        y_margin_ratio = 0.025
+        
+        x_max_degree = 45.0
+        y_max_degree = 30.0
+        
+        x_degrees = int(self.get_ratio_degrees(ratio_x, x_center_ratio, x_margin_ratio, x_max_degree))
+        y_degrees = int(self.get_ratio_degrees(ratio_y, y_center_ratio, y_margin_ratio, y_max_degree))
+        
+        print("x_degrees", x_degrees)
+
+        duration = 1
+        
+#        self.drone_controller.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=y_degrees/duration, duration=duration)
+
+#        if x_degrees != 0:
+#            max_rotation_speed = 45
+#            
+#            speed = (x_degrees/duration)/max_rotation_speed
+#            print("Speed: {} / {}".format(speed, max_rotation_speed))
+##            self.drone_controller.bebop.fly_direct(roll=0, pitch=0, yaw=int(speed*100), vertical_movement=0, duration=duration)
+        
     # If the original image exists, obtain faces. Show all faces in red, and show the correct one in green.
     # If the correct face is found, a patch around the body is drawn in black, and the coordinates are returned
     # as well as the drawn image.
@@ -192,6 +223,9 @@ class FaceRecognition:
         if correct_face_corners is None:
             print('The correct face is not found.')
             return (-1, -1, -1, -1), (-1, -1, -1, -1)
+        
+        image_w, image_h, _ = image_original.shape
+        self.perform_action(correct_face_corners, image_w, image_h, image_drawn)
         
         # Determine the body patch corners
         estimate_body_corners = self.get_body_patch(image_original, correct_face_corners)

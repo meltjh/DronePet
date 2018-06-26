@@ -24,7 +24,7 @@ class StreamInput:
         self.droneController = droneController
         self.vision = vision
         
-        self.faceRecognition = FaceRecognition()
+        self.faceRecognition = FaceRecognition(droneController)
         self.gestureRecognition = GestureRecognition(self.faceRecognition, self.droneController)
         self.streamOutput = streamOutput
         
@@ -63,6 +63,10 @@ class StreamInput:
                 # Show all faces and get the location in which the human should be.
                 (body_top, body_bottom, body_left, body_right), (face_top, face_bottom, face_left, face_right) = self.faceRecognition.main(image_original, image_drawn, self.face_id)
 
+                self.streamOutput.update_stream(image_drawn)
+                print("\n\n")
+                return
+            
                 if max(body_top, body_bottom, body_left, body_right) < 0:
                     print('No patch found by face_recognition')
                     self.streamOutput.update_stream(image_drawn)

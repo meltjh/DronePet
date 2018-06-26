@@ -89,7 +89,8 @@ class LSTMGestureRecognition:
             angle_rshoulder = self.get_angle(relbow, rshoulder, neck, "right")
         
             return [angle_relbow, angle_rshoulder, angle_lshoulder, angle_lelbow]
-        return None
+        return None   
+
         
 class GestureRecognition:
     
@@ -111,81 +112,7 @@ class GestureRecognition:
         self.droneController = droneController
         
         self.lstm_gesture_recognition = LSTMGestureRecognition()
-            
-            
-    def relative_to_absolute_pos(self, patch_shape, patch_margins, pos):
-        x = pos.x
-        y = pos.y
-        
-        [margin_top, margin_bottom, margin_left, margin_right] =  patch_margins   
-        # If there was some margin, calculate the relative positions and update the skeleton.
-        if max(margin_top, margin_bottom, margin_left, margin_right) > 0:
-            
-            [patch_h, patch_w, _] = patch_shape
-            offset_x = margin_left
-            offset_y = margin_top
-            full_w = margin_left + patch_w + margin_right
-            full_h = margin_top + patch_h + margin_bottom
-        
-            return (x*patch_w+offset_x)/full_w, (y*patch_h+offset_y)/full_h
-            
-        return x, y
-        
-    def determine_camera_movements(self, skeleton, patch_shape, patch_margins):
-        nose_x_scale, nose_y_scale = self.relative_to_absolute_pos(patch_shape, patch_margins, skeleton.body_parts[0])
-        
-        
-#        print("NOSE SCALE X", nose_x_scale)
-        middle = 0.5
-        margin = 0.05
-        
-        command = Action.NOTHING
-        if nose_x_scale > middle + margin:
-#            offset = nose_x_scale - (middle + margin)
-            offset = nose_x_scale - middle
-            command = Action.LOOK_RIGHT
-#            print("GO TO RIGHT")
-        elif nose_x_scale < middle - margin:
-#            offset = (middle - margin) - nose_x_scale
-            offset = middle  - nose_x_scale
-            command = Action.LOOK_LEFT
-#            print("GO TO LEFT")
-        else:
-            offset = 0
-        
-        if offset != 0:
-#            print("OFFSET X" , offset)
-            value = (((offset+1)**11)-1)
-            self.droneController.perform_action(command, value)
-    
-
-        
-        
-#        print("NOSE SCALE Y", nose_y_scale)
-        middle = 0.4 # <.5 so see more body
-        margin = 0.075
-        
-        command = Action.NOTHING
-        if nose_y_scale > middle + margin:
-#            offset = nose_y_scale - (middle + margin)
-            offset = nose_y_scale - middle
-            command = Action.LOOK_DOWN
-#            print("GO TO DOWN")
-        elif nose_y_scale < middle - margin:
-#            offset = (middle - margin) - nose_y_scale
-            offset = middle - nose_y_scale
-            command = Action.LOOK_UP
-#            print("GO TO UP")
-        else:
-            offset = 0
-        
-        if offset != 0:
-#            print("OFFSET Y" , offset)
-            value = (((offset+1)**9)-1)
-            self.droneController.perform_action(command, value)
-            
-    
-    
+#        self.positional_recognition = PositionalRecognition(droneController)
 
     def get_correct_pose_estimator(self, w, h):
         ratio = w/h
@@ -236,12 +163,10 @@ class GestureRecognition:
         if correct_skeleton is None:
             print("No skeleton in the face position found")
             return False
-
-        self.determine_camera_movements(correct_skeleton, image_original.shape, patch_margins)
         
         image_drawn = tf_pose_est.draw_humans(image_drawn, [correct_skeleton], imgcopy=False)
         
-        
+#        self.positional_recognition.perform_action(image_original.shape, patch_margins, correct_skeleton)
         self.lstm_gesture_recognition.append_skeleton(correct_skeleton)
         label = self.lstm_gesture_recognition.predict()
         

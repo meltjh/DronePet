@@ -77,6 +77,7 @@ def get_angles_video(poseEstimator, category, video_name):
      
         # Break the loop
         else:
+            print(correct_frames)
             return angles_matrix
     
     # When everything done, release the video capture object
@@ -84,9 +85,9 @@ def get_angles_video(poseEstimator, category, video_name):
 
 if __name__ == "__main__":
     path_video_angles = "video_angles"
-    category = "10_clapping"
-    file_video_angles = "{}.pkl".format(category)
-    full_angles_path = "../{}/{}".format(path_video_angles, file_video_angles)
+    category = "down"
+    file_video_angles = "../{}.pkl".format(category)
+    full_angles_path = "{}/{}".format(path_video_angles, file_video_angles)
     
     if not os.path.exists(path_video_angles):
         os.makedirs(path_video_angles)
