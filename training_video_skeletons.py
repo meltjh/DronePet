@@ -9,9 +9,9 @@ import pickle
 def get_angle(p1, p2, p3, side):
     radians = math.atan2(p3.y - p2.y, p3.x - p2.x) - math.atan2(p1.y - p2.y, p1.x - p2.x)
     if side == 'left':
-        return -math.sin(radians)
+        return -math.sin(radians), math.cos(radians)
     else:
-        return math.sin(radians)
+        return math.sin(radians), math.cos(radians)
 
 def get_angles_video(poseEstimator, category, video_name):
     if not video_name.endswith(".avi"):
@@ -24,7 +24,7 @@ def get_angles_video(poseEstimator, category, video_name):
     
     correct_frames = 0
     frames = 0
-    angles_matrix = np.zeros([1, 4])
+    angles_matrix = np.zeros([1, 8])
     
     # Read until video is completed
     while(cap.isOpened()):
@@ -47,15 +47,15 @@ def get_angles_video(poseEstimator, category, video_name):
                     lelbow = correct_skeleton.body_parts[6]
                     lwrist = correct_skeleton.body_parts[7]
                     
-                    angle_lelbow = get_angle(lwrist, lelbow, lshoulder, "left")
-                    angle_relbow = get_angle(rwrist, relbow, rshoulder, "right")
-                    angle_lshoulder = get_angle(lelbow, lshoulder, neck, "left")
-                    angle_rshoulder = get_angle(relbow, rshoulder, neck, "right")
+                    angle_lelbow_sin, angle_lelbow_cos = get_angle(lwrist, lelbow, lshoulder, "left")
+                    angle_relbow_sin, angle_relbow_cos = get_angle(rwrist, relbow, rshoulder, "right")
+                    angle_lshoulder_sin, angle_lshoulder_cos = get_angle(lelbow, lshoulder, neck, "left")
+                    angle_rshoulder_sin, angle_rshoulder_cos = get_angle(relbow, rshoulder, neck, "right")
                     
                     image_drawn = TfPoseEstimator.draw_humans(frame, skeletons, imgcopy=False)
                     image_drawn = cv2.resize(image_drawn, (0,0), fx=0.5, fy=0.5)
                     
-                    angles = np.array([angle_relbow, angle_rshoulder, angle_lshoulder, angle_lelbow])
+                    angles = np.array([angle_relbow_sin, angle_relbow_cos, angle_rshoulder_sin, angle_rshoulder_cos, angle_lshoulder_sin, angle_lshoulder_cos, angle_lelbow_sin, angle_lelbow_cos])
                     if correct_frames == 0:
                         angles_matrix[0] = angles
                     else:

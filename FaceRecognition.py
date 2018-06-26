@@ -173,24 +173,24 @@ class FaceRecognition:
         x_margin_ratio = 0.025
         y_margin_ratio = 0.025
         
-        x_max_degree = 45.0
-        y_max_degree = 30.0
+        x_max_degree = 60.0
+        y_max_degree = 50.0
         
         x_degrees = int(self.get_ratio_degrees(ratio_x, x_center_ratio, x_margin_ratio, x_max_degree))
         y_degrees = int(self.get_ratio_degrees(ratio_y, y_center_ratio, y_margin_ratio, y_max_degree))
         
         print("x_degrees", x_degrees)
 
-        duration = 1
+        duration = 0.10
         
 #        self.drone_controller.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=y_degrees/duration, duration=duration)
 
-#        if x_degrees != 0:
-#            max_rotation_speed = 45
-#            
-#            speed = (x_degrees/duration)/max_rotation_speed
-#            print("Speed: {} / {}".format(speed, max_rotation_speed))
-##            self.drone_controller.bebop.fly_direct(roll=0, pitch=0, yaw=int(speed*100), vertical_movement=0, duration=duration)
+        if x_degrees != 0:
+            max_rotation_speed = 30
+            
+            speed = (x_degrees/duration)/max_rotation_speed
+            print("Speed: {} / {}".format(speed, max_rotation_speed))
+            self.drone_controller.bebop.fly_direct(roll=0, pitch=0, yaw=int(speed*100), vertical_movement=0, duration=duration)
         
     # If the original image exists, obtain faces. Show all faces in red, and show the correct one in green.
     # If the correct face is found, a patch around the body is drawn in black, and the coordinates are returned

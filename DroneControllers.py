@@ -7,7 +7,7 @@ class DroneController:
     def __init__(self, bebop):
         print('Controller')
         self.bebop = bebop
-        self.bebop.SetMaxRotationSpeed(45.0)
+        self.bebop.SetMaxRotationSpeed(30)
        
     def perform_action(self, command, command_value=None, duration=1):
         if command != -1 and command != Action.NOTHING:
