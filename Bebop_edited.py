@@ -56,6 +56,8 @@ class BebopSensors:
         return str
 
 class Bebop():
+    IsOnlineBebop = True
+    
     def __init__(self, drone_type="Bebop2"):
         """
         Create a new Bebop object.  Assumes you have connected to the Bebop's wifi

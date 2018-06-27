@@ -14,7 +14,7 @@ class FaceRecognition:
         # Load the trained mode
         self.recognizer.read('face_recognition_data/trainer/trainer.yml')
         # Load prebuilt model for Frontal Face
-        cascadePath = "face_recognition_data/haarcascade_frontalface_default.xml"
+        cascadePath = "face_recognition_data/haarcascade_frontalface_alt.xml"
         # Create classifier from prebuilt model
         self.faceCascade = cv2.CascadeClassifier(cascadePath);
         
@@ -22,10 +22,10 @@ class FaceRecognition:
         self.font = cv2.FONT_HERSHEY_SIMPLEX
         
         self.scaleFactor = 1.3
-        self.minNeighbors = 2
+        self.minNeighbors = 3
         # high res
         self.minSize = (88,88)
-        self.maxSize = (320, 320)
+        self.maxSize = (1024, 1024)#(320, 320)
         # low res
         # self.minSize = (50,50)
         # self.maxSize = (200, 200)
@@ -164,33 +164,38 @@ class FaceRecognition:
         center_x = (face_right-face_left)/2 + face_left
         center_y = (face_bottom-face_top)/2 + face_top
         
+        print("center_y", center_y)
+        
         # Somehow /2...
-        ratio_x = center_x/image_w/2
-        ratio_y = center_y/image_h/2 
+        ratio_x = center_x/(image_w/2)
+        ratio_y = center_y/(image_h/2)
+ 
+#        print("ratio_y",ratio_y)
 
         x_center_ratio = 0.5
         y_center_ratio = 0.5
         x_margin_ratio = 0.025
         y_margin_ratio = 0.025
         
-        x_max_degree = 60.0
-        y_max_degree = 50.0
+        x_max_degree = 50.0
+        y_max_degree = 37.0
         
         x_degrees = int(self.get_ratio_degrees(ratio_x, x_center_ratio, x_margin_ratio, x_max_degree))
-        y_degrees = int(self.get_ratio_degrees(ratio_y, y_center_ratio, y_margin_ratio, y_max_degree))
+        y_degrees = -int(self.get_ratio_degrees(ratio_y, y_center_ratio, y_margin_ratio, y_max_degree))
         
-        print("x_degrees", x_degrees)
+#        print("y_degrees", y_degrees)
 
-        duration = 0.10
+        duration = 0.15
         
-#        self.drone_controller.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=y_degrees/duration, duration=duration)
+        self.drone_controller.bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=y_degrees/duration, duration=duration)
 
         if x_degrees != 0:
-            max_rotation_speed = 30
+            max_rotation_speed = 20
             
             speed = (x_degrees/duration)/max_rotation_speed
             print("Speed: {} / {}".format(speed, max_rotation_speed))
-            self.drone_controller.bebop.fly_direct(roll=0, pitch=0, yaw=int(speed*100), vertical_movement=0, duration=duration)
+            if self.drone_controller.bebop.IsOnlineBebop:
+                self.drone_controller.bebop.fly_direct(roll=0, pitch=0, yaw=int(speed*100), vertical_movement=0, duration=duration)
         
     # If the original image exists, obtain faces. Show all faces in red, and show the correct one in green.
     # If the correct face is found, a patch around the body is drawn in black, and the coordinates are returned

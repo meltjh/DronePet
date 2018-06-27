@@ -30,7 +30,7 @@ class StreamInput:
         
         # If true, save the patches of the face found by the id
         self.face_id = 0
-        self.training = Training.NoTraining
+        self.training = Training.AllTraining
         self.train_only = False # Only do face recognition
         
     def processing_stream(self, args):
@@ -63,9 +63,10 @@ class StreamInput:
                 # Show all faces and get the location in which the human should be.
                 (body_top, body_bottom, body_left, body_right), (face_top, face_bottom, face_left, face_right) = self.faceRecognition.main(image_original, image_drawn, self.face_id)
 
-#                self.streamOutput.update_stream(image_drawn)
+                self.streamOutput.update_stream(image_drawn)
 #                print("\n\n")
-#                return
+                return
+#                sys.exit("End of testing")
             
                 if max(body_top, body_bottom, body_left, body_right) < 0:
                     print('No patch found by face_recognition')

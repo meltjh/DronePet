@@ -119,7 +119,7 @@ class GestureRecognition:
         idx = (np.abs(self.pose_estimators_ratios - ratio)).argmin()
         
         
-        print("Ratio {} -> {} ({})".format(ratio, self.pose_estimators_ratios[idx], idx))
+#        print("Ratio {} -> {} ({})".format(ratio, self.pose_estimators_ratios[idx], idx))
         
         return self.pose_estimators[idx]
     
@@ -167,16 +167,16 @@ class GestureRecognition:
         image_drawn = tf_pose_est.draw_humans(image_drawn, [correct_skeleton], imgcopy=False)
         
 #        self.positional_recognition.perform_action(image_original.shape, patch_margins, correct_skeleton)
-        self.lstm_gesture_recognition.append_skeleton(correct_skeleton)
-        label = self.lstm_gesture_recognition.predict()
-        
-        if label == 0:
-            print("Waving left hand")
-        elif label == 1:
-            print("Waving right hand")
-        elif label == 2:
-            print("Clapping")
-        else:
-            print("Other action")
+#        self.lstm_gesture_recognition.append_skeleton(correct_skeleton)
+#        label = self.lstm_gesture_recognition.predict()
+#        
+#        if label == 0:
+#            print("Waving left hand")
+#        elif label == 1:
+#            print("Waving right hand")
+#        elif label == 2:
+#            print("Clapping")
+#        else:
+#            print("Other action")
 
         return True

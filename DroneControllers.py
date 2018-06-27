@@ -7,7 +7,7 @@ class DroneController:
     def __init__(self, bebop, ONLINE):
         print('Controller')
         self.bebop = bebop
-        self.bebop.SetMaxRotationSpeed(30)
+        self.bebop.SetMaxRotationSpeed(20)
         self.ONLINE = ONLINE
         self.allow_movements = False
        
