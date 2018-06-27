@@ -25,7 +25,7 @@ class FaceRecognition:
         self.minNeighbors = 3
         # high res
         self.minSize = (88,88)
-        self.maxSize = (1024, 1024)#(320, 320)
+        self.maxSize = (320, 320)
         # low res
         # self.minSize = (50,50)
         # self.maxSize = (200, 200)
@@ -178,7 +178,7 @@ class FaceRecognition:
         y_margin_ratio = 0.025
         
         x_max_degree = 50.0
-        y_max_degree = 37.0
+        y_max_degree = 30.0
         
         x_degrees = int(self.get_ratio_degrees(ratio_x, x_center_ratio, x_margin_ratio, x_max_degree))
         y_degrees = -int(self.get_ratio_degrees(ratio_y, y_center_ratio, y_margin_ratio, y_max_degree))

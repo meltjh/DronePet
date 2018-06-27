@@ -77,7 +77,7 @@ def get_angles_video(poseEstimator, category, video_name):
     cap.release()
 
 if __name__ == "__main__":
-    path_video_angles = "video_angles"
+    path_video_angles = "video_angles_cossin"
     category = "10_clapping"
     file_video_angles = "{}.pkl".format(category)
     full_angles_path = "{}/{}".format(path_video_angles, file_video_angles)

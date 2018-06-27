@@ -38,8 +38,8 @@ class LSTMGestureRecognition:
     def __init__(self):
         
         self.sess = tf.Session()
-        loader = tf.train.import_meta_graph("./lstm_model/model.meta")
-        loader.restore(self.sess, tf.train.latest_checkpoint("./lstm_model"))
+        loader = tf.train.import_meta_graph("./lstm_model_cossin/model.meta")
+        loader.restore(self.sess, tf.train.latest_checkpoint("./lstm_model_cossin"))
           
         graph = tf.get_default_graph()
         self.x = graph.get_tensor_by_name("x:0")
@@ -65,12 +65,12 @@ class LSTMGestureRecognition:
         if frame is not None:
             self.frames_queue.appendleft(frame)
          
-    def get_angle(self, p1, p2, p3, side):
+    def get_angle(p1, p2, p3, side):
         radians = math.atan2(p3.y - p2.y, p3.x - p2.x) - math.atan2(p1.y - p2.y, p1.x - p2.x)
         if side == 'left':
-            return -math.sin(radians)
+            return -math.sin(radians), math.cos(radians)
         else:
-            return math.sin(radians)
+            return math.sin(radians), math.cos(radians)
     
     def get_angles(self, skeleton):
         if all(part in skeleton.body_parts for part in [1, 2, 3, 4, 5, 6, 7]):
@@ -82,13 +82,14 @@ class LSTMGestureRecognition:
             lshoulder = skeleton.body_parts[5]
             lelbow = skeleton.body_parts[6]
             lwrist = skeleton.body_parts[7]
+    
+            angle_lelbow_sin, angle_lelbow_cos = self.get_angle(lwrist, lelbow, lshoulder, "left")
+            angle_relbow_sin, angle_relbow_cos = self.get_angle(rwrist, relbow, rshoulder, "right")
+            angle_lshoulder_sin, angle_lshoulder_cos = self.get_angle(lelbow, lshoulder, neck, "left")
+            angle_rshoulder_sin, angle_rshoulder_cos = self.get_angle(relbow, rshoulder, neck, "right")
             
-            angle_lelbow = self.get_angle(lwrist, lelbow, lshoulder, "left")
-            angle_relbow = self.get_angle(rwrist, relbow, rshoulder, "right")
-            angle_lshoulder = self.get_angle(lelbow, lshoulder, neck, "left")
-            angle_rshoulder = self.get_angle(relbow, rshoulder, neck, "right")
         
-            return [angle_relbow, angle_rshoulder, angle_lshoulder, angle_lelbow]
+            return [angle_relbow_sin, angle_relbow_cos, angle_rshoulder_sin, angle_rshoulder_cos, angle_lshoulder_sin, angle_lshoulder_cos, angle_lelbow_sin, angle_lelbow_cos]
         return None   
 
         
