@@ -7,9 +7,9 @@ class DroneController:
     def __init__(self, bebop, ONLINE):
         print('Controller')
         self.bebop = bebop
-        self.bebop.SetMaxRotationSpeed(20)
+        self.bebop.SetMaxRotationSpeed(35)
         self.ONLINE = ONLINE
-        self.allow_movements = False
+        self.allow_flip = False
        
     def perform_action(self, command, command_value=None, duration=1):
         if command != -1 and command != Action.NOTHING:
@@ -48,32 +48,32 @@ class DroneController:
 
         if cmd == Action.ALLOW_MOVEMENTS:
             print("ALLOW_MOVEMENTS")
-            self.allow_movements = True
+            self.allow_flip = True
             return
         if cmd == Action.DISALLOW_MOVEMENTS:
             print("DISALLOW_MOVEMENTS")
-            self.allow_movements = False
+            self.allow_flip = False
             return
         
-        if self.ONLINE and self.allow_movements:
+        if self.ONLINE:# and self.allow_movements:
             # Movement stuff
-            if cmd == Action.MOVE_FORWARD:
-                self.bebop.fly_direct(roll=0, pitch=+50, yaw=0, vertical_movement=0, duration=duration)
-                return
-            if cmd == Action.MOVE_BACKWARD:
-                self.bebop.fly_direct(roll=0, pitch=-50, yaw=0, vertical_movement=0, duration=duration)
-                return
-            if cmd == Action.MOVE_LEFT:
-                self.bebop.fly_direct(roll=-50, pitch=0, yaw=0, vertical_movement=0, duration=duration)
-                return
-            if cmd == Action.MOVE_RIGHT:
-                self.bebop.fly_direct(roll=+50, pitch=0, yaw=0, vertical_movement=0, duration=duration)
-                return
+#            if cmd == Action.MOVE_FORWARD:
+#                self.bebop.fly_direct(roll=0, pitch=+50, yaw=0, vertical_movement=0, duration=duration)
+#                return
+#            if cmd == Action.MOVE_BACKWARD:
+#                self.bebop.fly_direct(roll=0, pitch=-50, yaw=0, vertical_movement=0, duration=duration)
+#                return
+#            if cmd == Action.MOVE_LEFT:
+#                self.bebop.fly_direct(roll=-50, pitch=0, yaw=0, vertical_movement=0, duration=duration)
+#                return
+#            if cmd == Action.MOVE_RIGHT:
+#                self.bebop.fly_direct(roll=+50, pitch=0, yaw=0, vertical_movement=0, duration=duration)
+#                return
             if cmd == Action.MOVE_UP:
-                self.bebop.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=50, duration=duration)
+                self.bebop.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=25, duration=duration)
                 return
             if cmd == Action.MOVE_DOWN:
-                self.bebop.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=-50, duration=duration)
+                self.bebop.fly_direct(roll=0, pitch=0, yaw=0, vertical_movement=-25, duration=duration)
                 return
             if cmd == Action.ROTATE_LEFT:
                 self.bebop.fly_direct(roll=0, pitch=0, yaw=-100, vertical_movement=0, duration=duration)

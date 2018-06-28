@@ -18,24 +18,24 @@ class KeyboardInput:
         return {
             ']': Action.LOOK_UP,
             '\\': Action.LOOK_DOWN,
-            '-': Action.LOOK_LEFT,
-            '=': Action.LOOK_RIGHT,
+#            '-': Action.LOOK_LEFT,
+#            '=': Action.LOOK_RIGHT,
             
-            'w': Action.MOVE_FORWARD,
-            's': Action.MOVE_BACKWARD,
-            'a': Action.MOVE_LEFT,
-            'd': Action.MOVE_RIGHT,
+#            'w': Action.MOVE_FORWARD,
+#            's': Action.MOVE_BACKWARD,
+#            'a': Action.MOVE_LEFT,
+#            'd': Action.MOVE_RIGHT,
             
-            'o': Action.MOVE_UP,
-            'l': Action.MOVE_DOWN,
-            'k': Action.ROTATE_LEFT,
-            ';': Action.ROTATE_RIGHT,
+            'a': Action.MOVE_UP,
+            's': Action.MOVE_DOWN,
+#            'k': Action.ROTATE_LEFT,
+#            ';': Action.ROTATE_RIGHT,
             
             'z': Action.TAKEOFF,
             'x': Action.SAVELAND,
             
             'q': Action.ABORT,
-            'start': Action.ALLOW_MOVEMENTS,
-            '`': Action.DISALLOW_MOVEMENTS,
-            't': Action.TEST
+            'm': Action.ALLOW_MOVEMENTS,
+#            '`': Action.DISALLOW_MOVEMENTS,
+#            't': Action.TEST
         }.get(inpt.lower(), Action.NOTHING) # default 

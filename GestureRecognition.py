@@ -48,9 +48,10 @@ class LSTMGestureRecognition:
         self.temp_prediction = graph.get_tensor_by_name("temp_prediction:0")
         
         
-        video_length = 5
-        amount_of_joints = 4
+        video_length = 6
+        amount_of_joints = 8
         self.frames_queue = deque([[0]*amount_of_joints]*video_length, video_length)
+
         
     def predict(self):      
         feed_dict ={self.x:[self.frames_queue]}      
@@ -63,9 +64,9 @@ class LSTMGestureRecognition:
     def append_skeleton(self, skeleton):
         frame = self.get_angles(skeleton)
         if frame is not None:
-            self.frames_queue.appendleft(frame)
+            self.frames_queue.append(frame)
          
-    def get_angle(p1, p2, p3, side):
+    def get_angle(self, p1, p2, p3, side):
         radians = math.atan2(p3.y - p2.y, p3.x - p2.x) - math.atan2(p1.y - p2.y, p1.x - p2.x)
         if side == 'left':
             return -math.sin(radians), math.cos(radians)
@@ -99,7 +100,7 @@ class GestureRecognition:
         
     
         # Load the trained model for different ratios
-        self.scales = [(11,9)]#[(12,8), (11,9), (11,10), (10,10)]
+        self.scales = [(15,9), (14,9), (13,9), (12,9), (11,9)]#[(11,9)]#[(12,8), (11,9), (11,10), (10,10)]
         self.pose_estimators = []
         self.pose_estimators_ratios = []
         for w, h in self.scales:
@@ -114,6 +115,13 @@ class GestureRecognition:
         
         self.lstm_gesture_recognition = LSTMGestureRecognition()
 #        self.positional_recognition = PositionalRecognition(droneController)
+
+        self.first_last = 4
+        self.second_last = 4
+        self.third_last = 4
+        self.did_up = False
+        self.did_down = False
+        
 
     def get_correct_pose_estimator(self, w, h):
         ratio = w/h
@@ -134,6 +142,8 @@ class GestureRecognition:
                     return skeleton
         
         return None
+    
+    
     
     # Draws the skeleton and returns the exact relative face position of the given id, or if None, the first face.
     def main(self, image_original, image_drawn, face_position, specific_face_id = None, patch_margins = (0,0,0,0)):
@@ -168,16 +178,56 @@ class GestureRecognition:
         image_drawn = tf_pose_est.draw_humans(image_drawn, [correct_skeleton], imgcopy=False)
         
 #        self.positional_recognition.perform_action(image_original.shape, patch_margins, correct_skeleton)
-#        self.lstm_gesture_recognition.append_skeleton(correct_skeleton)
-#        label = self.lstm_gesture_recognition.predict()
-#        
-#        if label == 0:
-#            print("Waving left hand")
-#        elif label == 1:
-#            print("Waving right hand")
-#        elif label == 2:
-#            print("Clapping")
-#        else:
-#            print("Other action")
+        self.lstm_gesture_recognition.append_skeleton(correct_skeleton)
+        label = self.lstm_gesture_recognition.predict()
+
+        
+        if label == 0:
+            print("0")
+        elif label == 1:
+            print("1")
+        elif label == 2:
+            print("2")
+#        elif label == 3:
+#            print("3")
+        elif label == 4:
+            print("4")
+            
+        self.third_last = self.second_last
+        self.second_last = self.first_last
+        self.first_last = label
+        
+        if self.third_last == self.second_last and self.second_last == self.first_last:
+            if label == 0:
+#                print("up")
+                if not self.did_up:
+                    print("==========\n\nDRONE UP\n\n==========")
+                    if self.droneController.ONLINE:
+                        self.droneController.command_to_action(Action.MOVE_UP)
+                    self.did_up = True
+            elif label == 1:
+#                print("down")
+                if not self.did_down and self.did_up:
+                    print("==========\n\nDRONE DOWN\n\n==========")
+                    if self.droneController.ONLINE:
+                        self.droneController.command_to_action(Action.MOVE_DOWN)
+                    self.did_down = True
+            elif label == 2:
+#                print("half circle up")
+                if self.droneController.allow_flip:
+                    print("++++++++++\n\nDRONE FLIP\n\n++++++++++")
+                    if self.droneController.ONLINE:
+                        self.droneController.command_to_action(Action.TEST)
+                    self.Allow_flip = False
+                else:
+                    print("Flip not yet allowed!")
+#            elif label == 3:
+#                print("half circle down")
+            elif label == 4:
+                print("noise")
+
+            self.first_last = 4
+            self.second_last = 4
+            self.third_last = 4
 
         return True

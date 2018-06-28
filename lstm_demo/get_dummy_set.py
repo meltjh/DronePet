@@ -47,7 +47,7 @@ def get_initial_frames(frame):
     return initial_frames
 
 def get_small_dataset_data():
-    num_joints = 4
+    num_joints = 8
     num_classes = len(Y_CLASSES)
     num_videos = (len(OFFSETS)*num_joints+1)*num_classes
     num_frames = len(OFFSET_RATIOS)
@@ -73,6 +73,7 @@ def get_small_dataset_data():
 
 #dataset_x, dataset_y = get_small_dataset_data()  
     
+# Returns movies 0->n-1, 1->n .. etc    
 def crop_video(frames, length):
     if len(frames) < length:
         print("Less than {} frames available ({}).", length, len(frames))
@@ -80,6 +81,16 @@ def crop_video(frames, length):
     cropped_videos = []
     for i in range(len(frames) - length + 1):
         cropped_videos.append(frames[i:i+length])
+    return cropped_videos
+
+# returns 0:2:n, 1:2:n etc
+def crop_video2(frames, skip_size):
+    if len(frames)%skip_size != 0:
+        print("Frames will not be equaly as long: {}%{}={}, should be 0.".format(len(frames), skip_size, len(frames)%skip_size))
+    cropped_videos = []
+    for i in range(skip_size):
+        cropped_videos.append(frames[i:len(frames):skip_size])
+
     return cropped_videos
 
 def crop_videos(dataset_x, dataset_y, length):

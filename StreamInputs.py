@@ -30,8 +30,8 @@ class StreamInput:
         
         # If true, save the patches of the face found by the id
         self.face_id = 0
-        self.training = Training.AllTraining
-        self.train_only = False # Only do face recognition
+#        self.training = Training.AllTraining
+#        self.train_only = False # Only do face recognition
         
     def processing_stream(self, args):
         print('processing_stream')
@@ -51,21 +51,21 @@ class StreamInput:
                 [image_h, image_w, _] = image_original.shape
                 
                 
-                if self.training == Training.AllTraining:
-                    self.faceRecognition.store_training_faces(image_original, self.face_id, True, image_drawn)                    
-                    
-                    if self.train_only:
-                        self.streamOutput.update_stream(image_drawn)
-                        return
+#                if self.training == Training.AllTraining:
+##                    self.faceRecognition.store_training_faces(image_original, self.face_id, True, image_drawn)                    
+#                    
+#                    if self.train_only:
+#                        self.streamOutput.update_stream(image_drawn)
+#                        return
                         
                 
                 # Detect the most confident face given the face_id
                 # Show all faces and get the location in which the human should be.
                 (body_top, body_bottom, body_left, body_right), (face_top, face_bottom, face_left, face_right) = self.faceRecognition.main(image_original, image_drawn, self.face_id)
 
-                self.streamOutput.update_stream(image_drawn)
+#                self.streamOutput.update_stream(image_drawn)
 #                print("\n\n")
-                return
+#                return
 #                sys.exit("End of testing")
             
                 if max(body_top, body_bottom, body_left, body_right) < 0:
@@ -74,13 +74,13 @@ class StreamInput:
                     return
                 
                 # Save the face patch that was found by gestureRecognition
-                if self.training == Training.IdTraining:
-                    image_patch_face = image_original[face_top:face_bottom, face_left:face_right, :]
-                    self.faceRecognition.store_training_face(image_patch_face, self.face_id)
-                    
-                    if self.train_only:
-                        self.streamOutput.update_stream(image_drawn)
-                        return
+#                if self.training == Training.IdTraining:
+#                    image_patch_face = image_original[face_top:face_bottom, face_left:face_right, :]
+#                    self.faceRecognition.store_training_face(image_patch_face, self.face_id)
+#                    
+#                    if self.train_only:
+#                        self.streamOutput.update_stream(image_drawn)
+#                        return
 
                 # Crop the images to feed to the skeleton recognition
                 image_original_patch = image_original[body_top:body_bottom, body_left:body_right, :]

@@ -3,7 +3,7 @@ import pickle
 import get_dummy_set as gds
 import numpy as np
 
-def get_training_set(directory, sub_vid_length):
+def get_training_set(directory, skip):
     file_names = os.listdir(directory)
     num_classes = len(file_names)
     
@@ -11,31 +11,27 @@ def get_training_set(directory, sub_vid_length):
     dataset_x = None
 
     for file_name in file_names:
-        if file_name.endswith(".pkl"):
+        if file_name.endswith("cossin.pkl"):
             with open("{}/{}".format(directory, file_name), 'rb') as f:
                 angles_per_video = pickle.load(f)
             
-            if file_name == "23_waving.pkl":
+            if file_name == "up_cossin.pkl":
                 class_num = 0
-            elif file_name == "23_waving_flipped.pkl":
+            elif file_name == "down_cossin.pkl":
                 class_num = 1
-            elif file_name == "10_clapping.pkl":
+            elif file_name == "half_circle_up_cossin.pkl":
                 class_num = 2
-            elif file_name == "up.pkl":
+            elif file_name == "half_circle_down_cossin.pkl":
                 class_num = 3
-            elif file_name == "down.pkl":
+            elif file_name == "noise_cossin.pkl":
                 class_num = 4
-            elif file_name == "half_circle_up.pkl":
-                class_num = 5
-            elif file_name == "half_circledown.pkl":
-                class_num = 6
                 
     
             one_hot_y = np.zeros(num_classes)
             one_hot_y[class_num] = 1
             
             for key, matrix in angles_per_video.items():
-                cropped = gds.crop_video(matrix, sub_vid_length)
+                cropped = gds.crop_video2(matrix, skip)
                 num_sub_vids = len(cropped)
                 
                 
@@ -50,4 +46,4 @@ def get_training_set(directory, sub_vid_length):
 
     return dataset_x, dataset_y
 
-#get_training_set("../video_angles")
+#get_training_set("../video_angles_cossin", 3)

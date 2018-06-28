@@ -11,10 +11,9 @@ import os
 tf.reset_default_graph()
 #mnist=input_data.read_data_sets("/tmp/data/",one_hot=True)
 
-crop_size = 22
-
+num_vids = 11
 #ordered_dataset_x, ordered_dataset_y = dd.get_small_dataset_data()
-ordered_dataset_x_cropped, ordered_dataset_y_cropped = td.get_training_set("../video_angles", crop_size)
+ordered_dataset_x_cropped, ordered_dataset_y_cropped = td.get_training_set("../video_angles_cossin", num_vids)
 
 #ordered_dataset_x_cropped, ordered_dataset_y_cropped = dd.crop_videos(ordered_dataset_x, ordered_dataset_y, crop_size)
 
@@ -23,13 +22,9 @@ num_videos, num_classes = ordered_dataset_y_cropped.shape
 
 print(num_videos, num_frames, num_classes, num_joints)
 
-c = list(zip(ordered_dataset_x_cropped, ordered_dataset_y_cropped))
-random.shuffle(c)
-dataset_x, dataset_y = zip(*c)
-
 #define constants
 #unrolled through 28 time steps
-time_steps=crop_size
+time_steps= 6
 #hidden LSTM units
 num_units=128
 #rows of 28 pixels
@@ -39,7 +34,7 @@ learning_rate=0.001
 #mnist is meant to be classified in 10 classes(0-9).
 n_classes=num_classes
 #size of batch
-batch_size=40
+batch_size=4
 
 #weights and biases of appropriate shape to accomplish above task
 out_weights=tf.Variable(tf.random_normal([num_units,n_classes]), name='out_weights')
@@ -76,8 +71,8 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
 sum_accuracy = 0
 sum_loss = 0
 
-num_epochs = 5
-runs_per_epoch = int(len(dataset_y)/batch_size)
+num_epochs = 50
+runs_per_epoch = int(len(ordered_dataset_y_cropped)/batch_size)
 num_tests = 0
 
 #initialize variables
@@ -85,6 +80,11 @@ init=tf.global_variables_initializer()
 with tf.Session() as sess:
     sess.run(init)
     for j in range(num_epochs): # Epoch
+        
+        c = list(zip(ordered_dataset_x_cropped, ordered_dataset_y_cropped))
+        random.shuffle(c)
+        dataset_x, dataset_y = zip(*c)
+        
         i = 0
         while i < runs_per_epoch:
             batch_x = dataset_x[i*batch_size:i*batch_size + batch_size]
@@ -101,7 +101,7 @@ with tf.Session() as sess:
                 print("For iter ",i)
                 print("Accuracy ",acc)
                 print("Loss ",los)
-                print("__________________")
+                print("________________")
     
             i += 1
 
@@ -113,4 +113,4 @@ with tf.Session() as sess:
 
     # Saving
     cur_path = os.getcwd()
-    saver.save(sess,  "./../lstm_model/model")
+    saver.save(sess,  "./../lstm_model_cossin/model")

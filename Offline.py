@@ -3,15 +3,30 @@ import cv2
 import matplotlib.pyplot as plt
 import sys
 import time
+from Actions import Action
 
 class OfflineDroneController:
     
     def __init__(self, args):
        print("OfflineDroneController") 
+       self.bebop = OfflineBebop()
+        
+       self.allow_flip = False
+       
+       
+    def perform_action(self, cmd, value = None):
+        print("perform_action", cmd, value)
         
         
-    def perform_action(self, command, value = None):
-        print("perform_action", command, value)
+        if cmd == Action.ALLOW_MOVEMENTS:
+            print("ALLOW_MOVEMENTS")
+            self.allow_flip = True
+            return
+        if cmd == Action.DISALLOW_MOVEMENTS:
+            print("DISALLOW_MOVEMENTS")
+            self.allow_flip = False
+            return
+        
         
 class OfflineBebop:
     IsOnlineBebop = False
@@ -37,8 +52,8 @@ class OfflineDroneVisionGUI:
 #        self.img = img
         
     def get_latest_valid_picture(self):
-        print("get_latest_valid_picture")
-        time.sleep(1)
+#        print("get_latest_valid_picture")
+        time.sleep(0.01)
         _, img = self.cap.read()
 #        img = img = cv2.imread("face_recognition_data/faces_by_hand/User.0.10.jpg".format(self.counter))
 #        img = img = cv2.imread("face_recognition_data/faces_by_hand/User.1.{}.jpg".format(self.counter))

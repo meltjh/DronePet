@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import cv2
 
-PYTHONW = False
+PYTHONW = True
                 
 class StreamOutput:
     
