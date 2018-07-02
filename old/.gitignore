@@ -1,0 +1,9 @@
+# OS generated files #
+######################
+.DS_Store
+__pycache__
+
+# Data #
+########
+face_recognition_data/dataset
+face_recognition_data/trainer
