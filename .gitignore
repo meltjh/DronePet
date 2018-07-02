@@ -1,0 +1,11 @@
+# OS generated files #
+######################
+.DS_Store
+__pycache__
+
+# Data #
+########
+face_recognition_data/dataset
+video_training_preprocessing/cropped_vids
+video_training_preprocessing/full_vids
+faces
