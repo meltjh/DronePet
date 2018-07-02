@@ -1,9 +1,0 @@
-# OS generated files #
-######################
-.DS_Store
-__pycache__
-
-# Data #
-########
-cropped_vids
-full_vids
